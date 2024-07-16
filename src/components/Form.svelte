@@ -7,7 +7,7 @@
 
 <form use:form class="space-y-16">
   <div class="space-y-8">
-    <Address name="address" id="address" placeholder="e.g. 3910 W 24th St" />
+    <Address name="address" id="address" placeholder="e.g. 1075 Nelson St" />
 
     <div>
       <label for="duration" class="block text-sm text-gray-700"
