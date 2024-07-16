@@ -1,0 +1,22 @@
+diff --git a/index.d.ts b/index.d.ts
+index d0ffe236f8c9df9a391892c83a113c097551bb4b..fae0efaa87f97bcaa9e39e5c90f41718da851516 100644
+--- a/index.d.ts
++++ b/index.d.ts
+@@ -2,6 +2,8 @@
+  * The JavaScript API for embedding Apple maps on your website.
+  */
+ declare namespace mapkit {
++    const loadedLibraries: readonly string[];
++
+     /**
+      * Initialize a mapkit object by providing an authorization callback and language.
+      */
+@@ -1857,7 +1859,7 @@ declare namespace mapkit {
+             query: string,
+             callback: SearchDelegate | AutocompleteSearchCallback,
+             options?: SearchAutocompleteOptions,
+-        ): void;
++        ): number;
+         /**
+          * Cancels a search request using its request ID.
+          *

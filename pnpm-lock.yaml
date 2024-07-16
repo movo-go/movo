@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  '@types/apple-mapkit-js-browser@5.65.7':
+    hash: jzdv6fqu4kehp6lnecefdr2tdq
+    path: patches/@types__apple-mapkit-js-browser@5.65.7.patch
+
 importers:
 
   .:
@@ -17,12 +22,21 @@ importers:
       '@astrojs/tailwind':
         specifier: ^5.1.0
         version: 5.1.0(astro@4.11.5(typescript@5.5.3))(tailwindcss@3.4.4)
+      '@fontsource/cardo':
+        specifier: ^5.0.13
+        version: 5.0.13
+      '@fontsource/david-libre':
+        specifier: ^5.0.21
+        version: 5.0.21
       astro:
         specifier: ^4.11.5
         version: 4.11.5(typescript@5.5.3)
       felte:
         specifier: ^1.2.14
         version: 1.2.14(svelte@5.0.0-next.133)
+      nanoid:
+        specifier: ^5.0.7
+        version: 5.0.7
       svelte:
         specifier: 5.0.0-next.133
         version: 5.0.0-next.133
@@ -40,8 +54,8 @@ importers:
         specifier: ^0.83.0
         version: 0.83.0(svelte@5.0.0-next.133)
       '@types/apple-mapkit-js-browser':
-        specifier: ^5.65.7
-        version: 5.65.7
+        specifier: 5.65.7
+        version: 5.65.7(patch_hash=jzdv6fqu4kehp6lnecefdr2tdq)
       prettier:
         specifier: ^3.3.3
         version: 3.3.3
@@ -393,6 +407,12 @@ packages:
 
   '@floating-ui/utils@0.2.4':
     resolution: {integrity: sha512-dWO2pw8hhi+WrXq1YJy2yCuWoL20PddgGaqTgVe4cOS9Q6qklXCiA1tJEqX6BEwRNSCP84/afac9hd4MS+zEUA==}
+
+  '@fontsource/cardo@5.0.13':
+    resolution: {integrity: sha512-v/e27QVbrpBDo08+segddPrEdccDBfuNEqOGU3ongRHd3mqklxGdEMblxD8cDx3J0JtZBPiPamRCPHz2Y5B1aA==}
+
+  '@fontsource/david-libre@5.0.21':
+    resolution: {integrity: sha512-6C0/5q9xBldqkKus0NhiJsRFg9GxYwyyzR/MU6Id+IeA/dUBXYkNn4Z+et2dQwnO0QKxUYSqDcGS36l0jx7+mA==}
 
   '@img/sharp-darwin-arm64@0.33.4':
     resolution: {integrity: sha512-p0suNqXufJs9t3RqLBO6vvrgr5OhgbWp76s5gTRvdmxmuv9E1rcaqGUsl3l4mKVmXPkTkTErXediAui4x+8PSA==}
@@ -2608,6 +2628,10 @@ snapshots:
 
   '@floating-ui/utils@0.2.4': {}
 
+  '@fontsource/cardo@5.0.13': {}
+
+  '@fontsource/david-libre@5.0.21': {}
+
   '@img/sharp-darwin-arm64@0.33.4':
     optionalDependencies:
       '@img/sharp-libvips-darwin-arm64': 1.0.2
@@ -2824,7 +2848,7 @@ snapshots:
     dependencies:
       tslib: 2.6.3
 
-  '@types/apple-mapkit-js-browser@5.65.7': {}
+  '@types/apple-mapkit-js-browser@5.65.7(patch_hash=jzdv6fqu4kehp6lnecefdr2tdq)': {}
 
   '@types/babel__core@7.20.5':
     dependencies:

@@ -13,8 +13,11 @@
     "@astrojs/check": "^0.8.1",
     "@astrojs/svelte": "^5.6.0",
     "@astrojs/tailwind": "^5.1.0",
+    "@fontsource/cardo": "^5.0.13",
+    "@fontsource/david-libre": "^5.0.21",
     "astro": "^4.11.5",
     "felte": "^1.2.14",
+    "nanoid": "^5.0.7",
     "svelte": "5.0.0-next.133",
     "tailwindcss": "^3.4.4",
     "typescript": "^5.5.3"
@@ -23,8 +26,13 @@
   "devDependencies": {
     "@melt-ui/pp": "^0.3.2",
     "@melt-ui/svelte": "^0.83.0",
-    "@types/apple-mapkit-js-browser": "^5.65.7",
+    "@types/apple-mapkit-js-browser": "5.65.7",
     "prettier": "^3.3.3",
     "prettier-plugin-svelte": "^3.2.5"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@types/apple-mapkit-js-browser@5.65.7": "patches/@types__apple-mapkit-js-browser@5.65.7.patch"
+    }
   }
 }
