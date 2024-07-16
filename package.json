@@ -16,9 +16,11 @@
     "@fontsource/cardo": "^5.0.13",
     "@fontsource/david-libre": "^5.0.21",
     "astro": "^4.11.5",
+    "clsx": "^2.1.1",
     "felte": "^1.2.14",
     "nanoid": "^5.0.7",
     "svelte": "5.0.0-next.133",
+    "tailwind-merge": "^2.4.0",
     "tailwindcss": "^3.4.4",
     "typescript": "^5.5.3"
   },
