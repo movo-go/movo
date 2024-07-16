@@ -9,10 +9,11 @@
   import { getMapKit } from "../utilities/mapkit";
   import type { HTMLInputAttributes } from "svelte/elements";
   import { nanoid } from "nanoid";
+  import { cn } from "../utilities/cn";
 
-  type Props = Omit<HTMLInputAttributes, "class" | "type">;
+  type Props = Omit<HTMLInputAttributes, "type">;
 
-  const { id: explicitId, ...restProps }: Props = $props();
+  const { id: explicitId, class: className, ...restProps }: Props = $props();
   const id = explicitId ?? nanoid();
 
   const {
@@ -84,13 +85,16 @@
     {...restProps}
     use:melt={$input}
     on:m-input={handleInput}
-    type="text"
     {id}
-    class="border-2 border-gray-800 px-2 py-3 bg-transparent w-full"
+    type="text"
+    class={cn(
+      "border-2 border-gray-800 px-2 py-3 bg-transparent w-full",
+      className,
+    )}
   />
 </div>
 
-{#if $open}
+{#if $open && results.length > 0}
   <ul
     use:melt={$menu}
     transition:fly={{ y: -10, duration: 150 }}
@@ -102,11 +106,9 @@
         class="p-2 rounded-md cursor-pointer hover:bg-orange-50 data-[highlighted]:bg-orange-50"
       >
         {#each result.displayLines as line, index (index)}
-          <p>{line}</p>
+          <p class:text-sm={index !== 0}>{line}</p>
         {/each}
       </li>
-    {:else}
-      <div class="p-2">Start typing to search</div>
     {/each}
   </ul>
 {/if}
