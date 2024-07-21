@@ -1,0 +1,26 @@
+{
+  "modo_plus": {
+    "coop_innovation_fee": 150,
+    "per_km": 35,
+    "daily_drive": 500,
+    "large_n_loadable": 700,
+    "oversized": 1000,
+    "day_tripper": {
+      "km_included": 500,
+      "daily_drive": 10000,
+      "large_n_loadable": 13500
+    }
+  },
+  "modo_monthly": {
+    "coop_innovation_fee": 150,
+    "per_km": 35,
+    "daily_drive": 600,
+    "large_n_loadable": 800,
+    "oversized": 1100,
+    "day_tripper": {
+      "km_included": 250,
+      "daily_drive": 10000,
+      "large_n_loadable": 13500
+    }
+  }
+}
