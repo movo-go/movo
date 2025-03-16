@@ -1,21 +1,22 @@
-import { defineConfig, envField } from "astro/config";
 import svelte from "@astrojs/svelte";
-import tailwind from "@astrojs/tailwind";
+import tailwindcss from "@tailwindcss/vite";
+import { defineConfig, envField } from "astro/config";
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [svelte(), tailwind()],
+  integrations: [svelte()],
+  vite: {
+    plugins: [tailwindcss()],
+  },
   prefetch: {
     prefetchAll: true,
   },
-  experimental: {
-    env: {
-      schema: {
-        MAPKIT_TOKEN: envField.string({
-          context: "server",
-          access: "public",
-        }),
-      },
+  env: {
+    schema: {
+      MAPKIT_TOKEN: envField.string({
+        context: "server",
+        access: "public",
+      }),
     },
   },
 });

@@ -1,5 +1,5 @@
 diff --git a/index.d.ts b/index.d.ts
-index d0ffe236f8c9df9a391892c83a113c097551bb4b..fae0efaa87f97bcaa9e39e5c90f41718da851516 100644
+index 2c5f3c56393577d8c245ae7ba03e33ebda943a60..4f8bd887c68d6a8577b452f142641f6ab36e95f3 100644
 --- a/index.d.ts
 +++ b/index.d.ts
 @@ -2,6 +2,8 @@
@@ -11,7 +11,7 @@ index d0ffe236f8c9df9a391892c83a113c097551bb4b..fae0efaa87f97bcaa9e39e5c90f41718
      /**
       * Initialize a mapkit object by providing an authorization callback and language.
       */
-@@ -1857,7 +1859,7 @@ declare namespace mapkit {
+@@ -1862,7 +1864,7 @@ declare namespace mapkit {
              query: string,
              callback: SearchDelegate | AutocompleteSearchCallback,
              options?: SearchAutocompleteOptions,

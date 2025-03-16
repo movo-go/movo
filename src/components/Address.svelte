@@ -103,7 +103,7 @@
     {#each results as result, index (index)}
       <li
         use:melt={$option(toOption(result))}
-        class="p-2 rounded-md cursor-pointer hover:bg-orange-50 data-[highlighted]:bg-orange-50"
+        class="p-2 rounded-md cursor-pointer hover:bg-orange-50 data-highlighted:bg-orange-50"
       >
         {#each result.displayLines as line, index (index)}
           <p class:text-sm={index !== 0}>{line}</p>

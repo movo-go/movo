@@ -1,7 +1,7 @@
 {
   "name": "movo",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
@@ -10,31 +10,33 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/check": "^0.8.1",
-    "@astrojs/svelte": "^5.6.0",
-    "@astrojs/tailwind": "^5.1.0",
-    "@fontsource/cardo": "^5.0.13",
-    "@fontsource/david-libre": "^5.0.21",
-    "astro": "^4.11.5",
+    "@felte/validator-zod": "^1.0.18",
+    "@fontsource/cardo": "^5.2.5",
+    "@fontsource/david-libre": "^5.2.5",
     "clsx": "^2.1.1",
-    "felte": "^1.2.14",
-    "nanoid": "^5.0.7",
-    "svelte": "5.0.0-next.133",
-    "tailwind-merge": "^2.4.0",
-    "tailwindcss": "^3.4.4",
-    "typescript": "^5.5.3"
+    "felte": "^1.3.0",
+    "nanoid": "^5.1.4",
+    "tailwind-merge": "^3.0.2",
+    "zod": "^3.24.2"
   },
-  "packageManager": "pnpm@9.4.0+sha512.f549b8a52c9d2b8536762f99c0722205efc5af913e77835dbccc3b0b0b2ca9e7dc8022b78062c17291c48e88749c70ce88eb5a74f1fa8c4bf5e18bb46c8bd83a",
+  "packageManager": "pnpm@10.6.3+sha512.bb45e34d50a9a76e858a95837301bfb6bd6d35aea2c5d52094fa497a467c43f5c440103ce2511e9e0a2f89c3d6071baac3358fc68ac6fb75e2ceb3d2736065e6",
   "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/svelte": "^7.0.6",
     "@melt-ui/pp": "^0.3.2",
-    "@melt-ui/svelte": "^0.83.0",
-    "@types/apple-mapkit-js-browser": "5.65.7",
-    "prettier": "^3.3.3",
-    "prettier-plugin-svelte": "^3.2.5"
+    "@melt-ui/svelte": "^0.86.4",
+    "@tailwindcss/vite": "^4.0.14",
+    "@types/apple-mapkit-js-browser": "5.78.1",
+    "astro": "^5.5.2",
+    "prettier": "^3.5.3",
+    "prettier-plugin-svelte": "^3.3.3",
+    "svelte": "^5.23.0",
+    "tailwindcss": "^4.0.14",
+    "typescript": "^5.8.2"
   },
   "pnpm": {
     "patchedDependencies": {
-      "@types/apple-mapkit-js-browser@5.65.7": "patches/@types__apple-mapkit-js-browser@5.65.7.patch"
+      "@types/apple-mapkit-js-browser": "patches/@types__apple-mapkit-js-browser.patch"
     }
   }
 }
