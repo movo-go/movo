@@ -10,6 +10,7 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@felte/reporter-cvapi": "^1.1.10",
     "@felte/validator-zod": "^1.0.18",
     "@fontsource/cardo": "^5.2.5",
     "@fontsource/david-libre": "^5.2.5",

@@ -5,25 +5,34 @@
     type ComboboxOptionProps,
   } from "@melt-ui/svelte";
   import { fly } from "svelte/transition";
-  import type { MeltEventHandler } from "@melt-ui/svelte/internal/types";
   import { getMapKit } from "../utilities/mapkit";
   import type { HTMLInputAttributes } from "svelte/elements";
   import { nanoid } from "nanoid";
   import { cn } from "../utilities/cn";
+  import { onMount } from "svelte";
+  import { createField } from "felte";
 
   type Props = Omit<HTMLInputAttributes, "type">;
 
-  const { id: explicitId, class: className, ...restProps }: Props = $props();
+  const {
+    id: explicitId,
+    name,
+    class: className,
+    ...restProps
+  }: Props = $props();
   const id = explicitId ?? nanoid();
+
+  const { field, onChange, onBlur } = createField(name ?? id);
 
   const {
     elements: { label, input, menu, option },
-    states: { open, inputValue },
-  } = createCombobox<mapkit.SearchAutocompleteResult>({
+    states: { open, touchedInput, inputValue },
+  } = createCombobox<string>({
     forceVisible: true,
     onSelectedChange: ({ next }) => {
+      onChange(next?.value);
       if (next) {
-        $inputValue = next.value.displayLines.join(" ");
+        $inputValue = next.value;
       }
       return next;
     },
@@ -31,61 +40,66 @@
 
   const toOption = (
     result: mapkit.SearchAutocompleteResult,
-  ): ComboboxOptionProps<mapkit.SearchAutocompleteResult> => ({
-    value: result,
-    label: result.displayLines.join(" "),
+  ): ComboboxOptionProps<string> => ({
+    value: result.displayLines.join(" "),
   });
 
-  let search: mapkit.Search | undefined;
   let debounceTimer: ReturnType<typeof setTimeout> | undefined;
+  const debounce = (callback: () => void) => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(callback, 200);
+  };
+
   let currentSearch: number | undefined;
   let results = $state<mapkit.SearchAutocompleteResult[]>([]);
+  let search = $state<mapkit.Search>();
 
-  const handleInput: MeltEventHandler<Event> = (e) => {
-    const value = (e.currentTarget as HTMLInputElement).value;
+  onMount(async () => {
+    const mk = await getMapKit();
+    search = new mk.Search({
+      getsUserLocation: true,
+      includeQueries: false,
+      includePointsOfInterest: true,
+      includeAddresses: true,
+    });
+  });
 
-    clearTimeout(debounceTimer);
-    if (currentSearch) {
-      search?.cancel(currentSearch);
-    }
+  $effect(() => {
+    const capturedSearch = search;
+    const value = $inputValue;
 
-    debounceTimer = setTimeout(async () => {
-      if (!value) {
-        results = [];
-        return;
+    if (!$touchedInput) return;
+    if (!capturedSearch) return;
+
+    debounce(() => {
+      if (currentSearch) {
+        capturedSearch.cancel(currentSearch);
       }
 
-      if (!search) {
-        const mk = await getMapKit();
-        search = new mk.Search({
-          getsUserLocation: true,
-          includeQueries: false,
-          includePointsOfInterest: true,
-          includeAddresses: true,
-        });
-      }
-
-      currentSearch = search.autocomplete(value, (error, response) => {
+      currentSearch = capturedSearch.autocomplete(value, (error, response) => {
         if (error) {
           console.error(error);
           return;
         }
         results = response.results;
       });
-    }, 200);
-  };
+    });
+  });
 </script>
 
 <div>
   <label use:melt={$label} for={id} class="block text-sm text-gray-700">
     Destination Address
   </label>
-  <!-- svelte-ignore event_directive_deprecated -->
   <input
     {...restProps}
+    use:field
     use:melt={$input}
-    on:m-input={handleInput}
     {id}
+    onblur={(event) => {
+      onBlur();
+      restProps.onblur?.(event);
+    }}
     type="text"
     class={cn(
       "border-2 border-gray-800 px-2 py-3 bg-transparent w-full",
