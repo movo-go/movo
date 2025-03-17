@@ -1,0 +1,183 @@
+{
+  "evo": {
+    "rates": {
+      "per_minute": 0.49,
+      "per_hour": 17.99,
+      "per_day": 104.99,
+      "all_access_fee": 1.85
+    },
+    "fees": {
+      "registration": {
+        "regular": 35.0,
+        "bcaa_members": 0.0
+      },
+      "car_share_operator_fee": 2.0,
+      "discounts": {
+        "bcaa_members": "10% off driving rates"
+      }
+    },
+    "service_fees": {
+      "yvr_park_n_fly": 5.0,
+      "lost_keys": 550.0,
+      "replacement_card": 0.0,
+      "excessive_cleaning": 150.0,
+      "unauthorized_parking": "300.00 + loss of use fee",
+      "unsecured_vehicle": 100.0,
+      "relocation": "50.00 + lot fees",
+      "damage_deductible": "up to 250.00",
+      "towing_impound": "150.00 processing fee + cost of tow",
+      "towing_ubc": "50.00 processing fee + cost of tow",
+      "parking_ticket": "20.00 + ticket",
+      "drained_battery": 100.0,
+      "loss_of_use": "104.99 × number of days",
+      "vehicle_recovery": "Cost to recover + loss of use fee",
+      "unauthorized_driver": 200.0,
+      "late_return_evo_return": 150.0,
+      "cancellation_evo_return": "Up to 50% of booking cost"
+    },
+    "features": {
+      "included": ["gas", "insurance", "parking", "unlimited kilometers"]
+    },
+    "taxes": {
+      "gst": 0.05,
+      "pst": 0.07,
+      "pvrt": {
+        "amount": 1.5,
+        "applies_to": "Trips lasting 8 hours or more",
+        "calculation": "Per day (24h), plus 5% GST on PVRT amount",
+        "exceptions": "No PVRT for bookings of 28 days or more",
+        "note": "PVRT applies to final length of booking; if returned early under 8 hours, no PVRT applies"
+      },
+      "note": "Subject to GST and PST if applicable. For trips lasting 8 hours or more, a daily $1.50 Passenger Vehicle Rental Tax (PVRT) is charged."
+    }
+  },
+  "modo": {
+    "plans": {
+      "modo_plus": {
+        "membership_costs": {
+          "share_purchase": 500.0,
+          "admin_fee": "1.00/year"
+        },
+        "rates": {
+          "daily_drive": 5.0,
+          "large_loadable": 7.0,
+          "oversized": 10.0
+        },
+        "day_tripper": {
+          "daily_drive": "100.00/day",
+          "large_loadable": "135.00/day",
+          "km_included": "500km/day",
+          "description": "Reduced rate for whole-day bookings that applies automatically to eligible bookings",
+          "additional_km_cost": 0.35,
+          "exclusions": "Excludes Oversized vehicles",
+          "note": "If regular rate is less than day tripper rate, you'll get the lower price"
+        }
+      },
+      "modo_monthly": {
+        "membership_costs": {
+          "share_purchase": "n/a",
+          "admin_fee": "6.00/month"
+        },
+        "rates": {
+          "daily_drive": 6.0,
+          "large_loadable": 8.0,
+          "oversized": 11.0
+        },
+        "day_tripper": {
+          "daily_drive": "100.00/day",
+          "large_loadable": "135.00/day",
+          "km_included": "250km/day",
+          "description": "Reduced rate for whole-day bookings that applies automatically to eligible bookings",
+          "additional_km_cost": 0.35,
+          "exclusions": "Excludes Oversized vehicles",
+          "note": "If regular rate is less than day tripper rate, you'll get the lower price"
+        }
+      },
+      "modo_business": {
+        "membership_costs": {
+          "share_purchase": "500.00 (optional)",
+          "admin_fee": "1.00/year"
+        },
+        "rates": {
+          "daily_drive": 6.0,
+          "large_loadable": 8.0,
+          "oversized": 11.0
+        },
+        "day_tripper": {
+          "daily_drive": "100.00/day",
+          "large_loadable": "135.00/day",
+          "km_included": "250km/day",
+          "description": "Reduced rate for whole-day bookings that applies automatically to eligible bookings",
+          "additional_km_cost": 0.35,
+          "exclusions": "Excludes Oversized vehicles",
+          "note": "If regular rate is less than day tripper rate, you'll get the lower price"
+        }
+      }
+    },
+    "trip_costs": {
+      "coop_innovation_fee": {
+        "evs": 1.0,
+        "non_evs": 3.0
+      },
+      "per_km": 0.35,
+      "fuel_surcharge": "0.01 per km for each $0.10 per litre over $2.10/litre (EVs exempt)"
+    },
+    "special_rates": {
+      "open_return": {
+        "fee": 3.0,
+        "description": "Leave return time open-ended, end booking from app to pay only for actual time used"
+      },
+      "overnight": {
+        "description": "Pay maximum of 3 hours between 6pm and 9am, even for overnight"
+      },
+      "hourly_cap": "12-hour price cap per 24 hours"
+    },
+    "taxes": {
+      "gst": 0.05,
+      "pst": 0.07,
+      "pvrt": {
+        "amount": 1.5,
+        "applies_to": "Bookings exceeding 8 hours",
+        "calculation": "Per day (24h), plus 5% GST on PVRT amount",
+        "exceptions": "No PVRT for bookings of 28 days or more",
+        "note": "PVRT applies to final length of booking; if returned early under 8 hours, no PVRT applies"
+      }
+    },
+    "additional_plans": {
+      "modo_green": {
+        "description": "For new/inexperienced drivers, sponsored by Modo Plus member",
+        "access": "Full fleet access"
+      },
+      "modo_associate": {
+        "description": "Household members added to Modo Plus account",
+        "rates": "Modo Plus rates",
+        "features": ["Can share bookings", "Co-op member owner"]
+      }
+    }
+  },
+  "comparison_notes": {
+    "basic_structure": "Evo uses time-based pricing with unlimited km. Modo uses time+distance pricing with km caps on day rates.",
+    "membership": "Evo has one-time fees. Modo offers co-op ownership (Plus) or monthly subscription.",
+    "special_features": {
+      "evo": ["One-way trips possible", "Home zone parking"],
+      "modo": [
+        "Round-trip service",
+        "Overnight rate caps",
+        "Vehicle variety (Daily Drive, Large/Loadable, Oversized)"
+      ]
+    },
+    "best_for": {
+      "evo": [
+        "Short one-way trips",
+        "Trips with uncertain return times",
+        "Long-distance travel (unlimited km)"
+      ],
+      "modo": [
+        "Planned bookings",
+        "Overnight use",
+        "Specific vehicle needs (e.g., cargo)",
+        "Co-op membership benefits"
+      ]
+    }
+  }
+}
