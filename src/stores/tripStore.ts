@@ -1,5 +1,5 @@
 import { atom } from 'nanostores';
-import type { ComparisonResult } from '../calculations';
+import type { ComparisonResult } from '../calculations/price';
 
 // Define the structure of our trip data
 export interface TripData {

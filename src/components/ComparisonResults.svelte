@@ -1,6 +1,6 @@
 <script lang="ts">
   import { comparisonResultStore } from "../stores/tripStore";
-  import type { ComparisonResult } from "../calculations";
+  import type { ComparisonResult } from "../calculations/price";
 
   // Subscribe to the store
   let comparisonResult = $state<ComparisonResult | null>(null);

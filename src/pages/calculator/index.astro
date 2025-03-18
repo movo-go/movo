@@ -18,7 +18,11 @@ function handleSubmit(formData: {
   modoPlan: string;
   isBcaaMember: boolean;
   distance_km: number;
-  vehiclePreference?: "daily_drive" | "large_loadable" | "oversized" | undefined;
+  vehiclePreference?:
+    | "daily_drive"
+    | "large_loadable"
+    | "oversized"
+    | undefined;
   isEv?: boolean | undefined;
 }) {
   // Convert the booking parameters to trip parameters
