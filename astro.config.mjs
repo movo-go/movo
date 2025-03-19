@@ -2,9 +2,11 @@ import svelte from "@astrojs/svelte";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, envField } from "astro/config";
 
+import superforms from "astro-superforms";
+
 // https://astro.build/config
 export default defineConfig({
-  integrations: [svelte()],
+  integrations: [svelte(), superforms()],
   vite: {
     plugins: [tailwindcss()],
   },

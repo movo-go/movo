@@ -13,14 +13,20 @@ export const calculateDirection = async (
     origin: start,
     departureDate,
   };
-  const route = new Promise<mapkit.EtaResponse>((resolve, reject) => {
+  
+  // Using the correct ETA response structure
+  const route = new Promise<{ destinations: mapkit.EtaResponse }>((resolve, reject) => {
     directions.eta(etaRequest, (error, data) => {
       if (error) {
         console.error(error);
         reject(error);
+      } else if (data) {
+        resolve({ destinations: data });
+      } else {
+        reject(new Error("No data returned from directions API"));
       }
-      resolve(data);
     });
   });
+  
   return route;
 };

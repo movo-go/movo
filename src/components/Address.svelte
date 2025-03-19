@@ -10,29 +10,29 @@
   import { nanoid } from "nanoid";
   import { cn } from "../utilities/cn";
   import { onMount } from "svelte";
-  import { createField } from "felte";
 
-  type Props = Omit<HTMLInputAttributes, "type">;
+  type Props = Omit<HTMLInputAttributes, "type" | "value"> & {
+    value: mapkit.SearchAutocompleteResult | undefined;
+  };
 
-  const {
+  let {
     id: explicitId,
-    name,
     class: className,
+    value = $bindable(),
+    name,
     ...restProps
   }: Props = $props();
   const id = explicitId ?? nanoid();
 
-  const { field, onChange, onBlur } = createField(name ?? id);
-
   const {
     elements: { label, input, menu, option },
     states: { open, touchedInput, inputValue },
-  } = createCombobox<string>({
+  } = createCombobox<mapkit.SearchAutocompleteResult>({
     forceVisible: true,
     onSelectedChange: ({ next }) => {
-      onChange(next?.value);
+      value = next?.value;
       if (next) {
-        $inputValue = next.value;
+        $inputValue = next.label ?? "";
       }
       return next;
     },
@@ -40,8 +40,9 @@
 
   const toOption = (
     result: mapkit.SearchAutocompleteResult,
-  ): ComboboxOptionProps<string> => ({
-    value: result.displayLines.join(" "),
+  ): ComboboxOptionProps<mapkit.SearchAutocompleteResult> => ({
+    value: result,
+    label: result.displayLines.join(" "),
   });
 
   let debounceTimer: ReturnType<typeof setTimeout> | undefined;
@@ -93,13 +94,8 @@
   </label>
   <input
     {...restProps}
-    use:field
     use:melt={$input}
     {id}
-    onblur={(event) => {
-      onBlur();
-      restProps.onblur?.(event);
-    }}
     type="text"
     class={cn(
       "border-2 border-gray-800 px-2 py-3 bg-transparent w-full",
