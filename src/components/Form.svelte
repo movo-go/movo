@@ -22,6 +22,7 @@
 <form use:form class="space-y-16">
   <div class="space-y-8">
     <Address
+      textLabel="Destination Address"
       name="address"
       id="address"
       placeholder="e.g. 1075 Nelson St"

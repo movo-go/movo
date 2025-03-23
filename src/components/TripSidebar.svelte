@@ -276,6 +276,7 @@
       <div class="space-y-4">
         <div>
           <Address
+            textLabel="Origin"
             bind:value={originAddress}
             class="w-full"
             placeholder="Starting location"
@@ -288,6 +289,7 @@
 
         <div>
           <Address
+            textLabel=""
             bind:value={destinationAddress}
             class="w-full"
             placeholder="Where do you want to go?"

@@ -13,6 +13,7 @@
 
   type Props = Omit<HTMLInputAttributes, "type" | "value"> & {
     value: mapkit.SearchAutocompleteResult | undefined;
+    textLabel: string;
   };
 
   let {
@@ -20,6 +21,7 @@
     class: className,
     value = $bindable(),
     name,
+    textLabel,
     ...restProps
   }: Props = $props();
   const id = explicitId ?? nanoid();
@@ -90,7 +92,7 @@
 
 <div>
   <label use:melt={$label} for={id} class="block text-sm text-gray-700">
-    Destination Address
+    {textLabel}
   </label>
   <input
     {...restProps}
