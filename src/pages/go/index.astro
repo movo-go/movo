@@ -1,8 +1,11 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import TripLayout from "../../components/TripLayout.svelte";
+import { getCollection } from "astro:content";
+
+const homezones = await getCollection("homezones");
 ---
 
 <Layout title="Go">
-  <TripLayout client:load />
+  <TripLayout client:load homezones={homezones} />
 </Layout>

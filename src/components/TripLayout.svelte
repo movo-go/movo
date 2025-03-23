@@ -2,6 +2,13 @@
   import TripSidebar from "./TripSidebar.svelte";
   import MapEmbed from "./MapEmbed.svelte";
   import { writable } from "svelte/store";
+  import type { CollectionEntry } from "astro:content";
+
+  interface Props {
+    homezones: CollectionEntry<"homezones">[];
+  }
+
+  const { homezones }: Props = $props();
 
   // Define interfaces for our location data
   interface LocationData {
@@ -31,7 +38,7 @@
   // Create a store to share location data
   const locationStore = writable<LocationData>({
     originCoordinates: null,
-    destinationCoordinates: null
+    destinationCoordinates: null,
   });
 
   // Handle location updates from the sidebar
@@ -47,6 +54,6 @@
   </div>
 
   <div class="flex-1">
-    <MapEmbed locationData={$locationStore} />
+    <MapEmbed {homezones} locationData={$locationStore} />
   </div>
 </div>

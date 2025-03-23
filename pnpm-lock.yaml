@@ -62,6 +62,9 @@ importers:
       '@astrojs/svelte':
         specifier: ^7.0.6
         version: 7.0.6(astro@5.5.2(jiti@2.4.2)(lightningcss@1.29.2)(rollup@4.35.0)(typescript@5.8.2)(yaml@2.5.0))(jiti@2.4.2)(lightningcss@1.29.2)(svelte@5.23.0)(typescript@5.8.2)(yaml@2.5.0)
+      '@infra-blocks/zod-utils':
+        specifier: ^0.4.5
+        version: 0.4.5
       '@melt-ui/pp':
         specifier: ^0.3.2
         version: 0.3.2(@melt-ui/svelte@0.86.4(svelte@5.23.0))(svelte@5.23.0)
@@ -499,6 +502,10 @@ packages:
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [x64]
     os: [win32]
+
+  '@infra-blocks/zod-utils@0.4.5':
+    resolution: {integrity: sha512-s9SC7T+rPydr5g6KIIWfVhrsLFwREwWVB3M9ZEiOF9zCTlPvgmfckEwFtoGJkT6lnOduxgPOFxXGjv8wbcdbbQ==}
+    engines: {node: '>=18.0.0'}
 
   '@internationalized/date@3.5.5':
     resolution: {integrity: sha512-H+CfYvOZ0LTJeeLOqm19E3uj/4YjrmOFtBufDHPfvtI80hFAMqtrp7oCACpe4Cil5l8S0Qu/9dYfZc/5lY8WQQ==}
@@ -2753,6 +2760,10 @@ snapshots:
 
   '@img/sharp-win32-x64@0.33.5':
     optional: true
+
+  '@infra-blocks/zod-utils@0.4.5':
+    dependencies:
+      zod: 3.24.2
 
   '@internationalized/date@3.5.5':
     dependencies:
