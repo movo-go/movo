@@ -7,8 +7,9 @@ export interface TripState {
   stayDuration: number | undefined;
   bcaaMembership: boolean;
   electricVehicle: boolean;
-  twoWayEvo: boolean;
+  roundTripRequired: boolean;
   route: mapkit.Route | undefined;
+  vehicleType: "daily_drive" | "large_loadable" | "oversized" | undefined;
 }
 type ComparisonError = {
   message: string;

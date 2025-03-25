@@ -1,9 +1,14 @@
 <script lang="ts">
   import TripSidebar from "./TripSidebar.svelte";
-  import MapEmbed from "./MapEmbed.svelte";
   import type { CollectionEntry } from "astro:content";
   import type { ComparisonCalc, TripState } from "./TripTypes";
-  import { calculateDirection, compareCarShareOptions } from "../calculations";
+  import {
+    calculateDirection,
+    compareCarShareOptions,
+    type TripParameters,
+  } from "../calculations";
+  import { onMount } from "svelte";
+  import { getMapKit } from "../utilities/mapkit";
   const {
     homezones,
   }: TripState & { homezones: CollectionEntry<"homezones">[] } = $props();
@@ -15,8 +20,9 @@
     inEvoHomeZone: false,
     bcaaMembership: false,
     electricVehicle: false,
-    twoWayEvo: false,
+    roundTripRequired: false,
     route: undefined,
+    vehicleType: undefined,
   });
 
   let comparisonResult = $state<Promise<ComparisonCalc>>();
@@ -60,43 +66,141 @@
       };
     }
     state.route = result.directions.routes[0];
+    state.inEvoHomeZone = checkIfInEvoHomeZone(
+      new mapkitInstance.Coordinate(
+        state.destinationCoordinate.latitude,
+        state.destinationCoordinate.longitude,
+      ),
+    );
     // Using the correct response structure from the updated directions.ts file
     const travelTime = result.directions.routes[0].expectedTravelTime;
     const travelDistance = result.directions.routes[0].distance;
     // Calculate total trip time
-    let totalDurationMinutes = Math.round((travelTime / 60) * 100) / 100;
-    console.log("Total duration minutes:", totalDurationMinutes);
-    // Add stay duration
-    totalDurationMinutes += state.stayDuration ?? 0;
-
-    let tripDistanceMeters = travelDistance;
-    // Double for round trip if selected
-    if (state.twoWayEvo) {
-      totalDurationMinutes += travelTime / 60;
-      tripDistanceMeters = travelDistance * 2;
-    }
+    const travelTimeMinutes = Math.round((travelTime / 60) * 100) / 100;
 
     // Calculate days (24 hour periods)
-    const days = Math.floor(totalDurationMinutes / (24 * 60));
-    const tripDistanceKm = Math.min(Math.round(tripDistanceMeters / 1000), 1);
+    const tripDistanceKm = Math.min(Math.round(travelDistance / 1000), 1);
     // Now calculate the cost comparison
-    const tripParams = {
-      duration_minutes: totalDurationMinutes,
+    const tripParams: TripParameters = {
+      start_date: new Date(),
+      driving_minutes: travelTimeMinutes,
+      staying_minutes: state.stayDuration ?? 0,
       distance_km: tripDistanceKm,
-      is_overnight: false, // This would need more sophisticated calculation based on time of day
-      overnight_minutes: 0, // This would need more sophisticated calculation
-      days: days,
-      is_bcaa_member: false, // This could be a user preference
-      vehicle_preference: "daily_drive" as const,
-      is_ev: false,
+      is_bcaa_member: state.bcaaMembership,
+      end_is_in_evo_home_zone: state.inEvoHomeZone,
+      is_ev: state.electricVehicle,
+      vehicle_preference: state.vehicleType,
+      round_trip_required: state.roundTripRequired,
     };
-
-    // Compare car share options
+    console.log("tripParams", tripParams);
     const comparisonResult = compareCarShareOptions(tripParams);
+    console.log("comparisonResult", comparisonResult);
     return {
       data: comparisonResult,
       error: null,
     };
+  }
+
+  let currentRoute = $state<mapkit.Route | undefined>(undefined);
+  let currentDestination: mapkit.MarkerAnnotation | undefined;
+
+  let mapElement: HTMLDivElement;
+  let map: mapkit.Map;
+  let mapkitInstance: typeof mapkit;
+  // let routeOverlay: mapkit.Overlay | null = null;
+  const defaultDelta = 0.1;
+  // Default coordinates (Vancouver)
+  const defaultCoordinates = {
+    latitude: 49.28091630159075,
+    longitude: -123.11395918331695,
+  };
+
+  $effect(() => {
+    if (tripState.route) {
+      if (currentRoute) {
+        map.removeOverlay(currentRoute.polyline);
+      }
+      const polylines = tripState.route.polyline;
+      polylines.style = new mapkitInstance.Style({
+        strokeColor: "#000088",
+        lineWidth: 2,
+      });
+      if (map) map.showItems(polylines);
+      currentRoute = tripState.route;
+      if (tripState.destinationCoordinate) {
+        if (currentDestination) {
+          map.removeAnnotation(currentDestination);
+        }
+        currentDestination = new mapkitInstance.MarkerAnnotation(
+          new mapkitInstance.Coordinate(
+            tripState.destinationCoordinate.latitude,
+            tripState.destinationCoordinate.longitude,
+          ),
+        );
+        map.addAnnotation(currentDestination);
+      }
+    }
+  });
+
+  onMount(async () => {
+    try {
+      // Initialize MapKit JS
+      mapkitInstance = await getMapKit();
+
+      // Create the map
+      map = new mapkitInstance.Map(mapElement, {
+        tracksUserLocation: true,
+        region: new mapkitInstance.CoordinateRegion(
+          new mapkitInstance.Coordinate(
+            defaultCoordinates.latitude,
+            defaultCoordinates.longitude,
+          ),
+          new mapkitInstance.CoordinateSpan(defaultDelta, defaultDelta),
+        ),
+      });
+      map.addEventListener("user-location-change", (event) => {
+        console.log("user-location-change", event);
+        tripState.originCoordinate = event.coordinate;
+      });
+      map.addEventListener("user-location-error", () => {
+        map.region = new mapkitInstance.CoordinateRegion(
+          new mapkitInstance.Coordinate(
+            defaultCoordinates.latitude,
+            defaultCoordinates.longitude,
+          ),
+          new mapkitInstance.CoordinateSpan(defaultDelta, defaultDelta),
+        );
+      });
+
+      // map.region = region;
+
+      homezones.forEach((homezone) => {
+        const zone = homezone.data.zone;
+        const items = mapkitInstance.importGeoJSON(zone);
+        if (items instanceof Error) {
+          throw items;
+        }
+
+        map.addItems(items);
+      });
+    } catch (error) {
+      console.error("Error initializing Apple Maps:", error);
+    }
+    map.overlays.forEach(
+      (overlay) =>
+        (overlay.style = new mapkitInstance.Style({
+          fillColor: "#00BCE2",
+          strokeColor: "#00BCE2",
+        })),
+    );
+  });
+
+  function checkIfInEvoHomeZone(coordinate: mapkit.Coordinate) {
+    console.log("checking if in evo home zone", coordinate);
+    const point = map.convertCoordinateToPointOnPage(coordinate);
+    const overlays = map.overlaysAtPoint(point);
+    console.log("overlays", overlays);
+    return overlays.length > 0;
   }
 </script>
 
@@ -109,7 +213,8 @@
       bind:stayDuration={tripState.stayDuration}
       bind:bcaaMembership={tripState.bcaaMembership}
       bind:electricVehicle={tripState.electricVehicle}
-      bind:twoWayEvo={tripState.twoWayEvo}
+      bind:roundTripRequired={tripState.roundTripRequired}
+      bind:vehicleType={tripState.vehicleType}
       route={tripState.route}
       {comparisonResult}
       calculateTripDetails={onSubmit}
@@ -117,11 +222,6 @@
   </div>
 
   <div class="flex-1">
-    <MapEmbed
-      {homezones}
-      {...tripState}
-      bind:inEvoHomeZone={tripState.inEvoHomeZone}
-      bind:originCoordinate={tripState.originCoordinate}
-    />
+    <div class="w-full h-full" bind:this={mapElement}></div>
   </div>
 </div>

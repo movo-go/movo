@@ -7,11 +7,11 @@
   let {
     originCoordinate = $bindable(),
     destinationCoordinate = $bindable(),
-    inEvoHomeZone,
     stayDuration = $bindable(),
     bcaaMembership = $bindable(),
     electricVehicle = $bindable(),
-    twoWayEvo = $bindable(),
+    roundTripRequired = $bindable(),
+    vehicleType = $bindable(),
     comparisonResult,
     calculateTripDetails,
   }: TripState & {
@@ -26,6 +26,7 @@
 
   $inspect(originCoordinate, destinationCoordinate, origin, destination);
 
+  $inspect(roundTripRequired);
   $effect(() => {
     if (origin) {
       originCoordinate = origin.coordinate;
@@ -84,17 +85,61 @@
             class="border-2 border-gray-800 px-2 py-3 bg-transparent w-full mt-1"
           />
         </div>
-
-        <div class="flex items-center">
-          <input
-            id="round-trip"
-            type="checkbox"
-            bind:checked={twoWayEvo}
-            class="h-4 w-4 text-gray-800 border-gray-800 rounded"
-          />
-          <label for="round-trip" class="ml-2 block text-sm text-gray-700">
-            Round Trip
+        <div>
+          <label
+            for="round-trip-required"
+            class="block text-sm text-gray-700 font-medium"
+          >
+            Round Trip Required
           </label>
+          <input
+            id="round-trip-required"
+            type="checkbox"
+            bind:checked={roundTripRequired}
+          />
+        </div>
+        <div>
+          <label
+            for="bcaa-membership"
+            class="block text-sm text-gray-700 font-medium"
+          >
+            BCAA Membership
+          </label>
+          <input
+            id="bcaa-membership"
+            type="checkbox"
+            bind:checked={bcaaMembership}
+          />
+        </div>
+        <div>
+          <label
+            for="electric-vehicle"
+            class="block text-sm text-gray-700 font-medium"
+          >
+            Electric Vehicle
+          </label>
+          <input
+            id="electric-vehicle"
+            type="checkbox"
+            bind:checked={electricVehicle}
+          />
+        </div>
+        <div>
+          <label
+            for="vehicle-type"
+            class="block text-sm text-gray-700 font-medium"
+          >
+            Vehicle Type
+          </label>
+          <select
+            id="vehicle-type"
+            bind:value={vehicleType}
+            class="border-2 border-gray-800 px-2 py-3 bg-transparent w-full mt-1"
+          >
+            <option value="daily_drive">Daily Drive</option>
+            <option value="large_loadable">Large Loadable</option>
+            <option value="oversized">Oversized</option>
+          </select>
         </div>
       </div>
 
@@ -159,23 +204,18 @@
             </div>
             <div class="flex justify-between">
               <span class="font-medium">Distance:</span>
-              <span
-                >{result.data.distance_km?.toFixed(1)} km {twoWayEvo
-                  ? "(round trip)"
-                  : "(one way)"}</span
-              >
+              <span>{result.data.distance_km?.toFixed(1)} km</span>
             </div>
             <div class="flex justify-between">
               <span class="font-medium">Travel Time:</span>
               <span
-                >{Math.round(result.data.duration_minutes || 0)} minutes {twoWayEvo
-                  ? "each way"
-                  : ""}</span
+                >{Math.round(result.data.travel_time_minutes_one_way)} minutes (one
+                way)</span
               >
             </div>
             <div class="flex justify-between">
               <span class="font-medium">Stay Duration:</span>
-              <span>{stayDuration} minutes</span>
+              <span>{stayDuration ?? 0} minutes</span>
             </div>
           </div>
 
