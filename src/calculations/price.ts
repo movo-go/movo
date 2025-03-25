@@ -40,6 +40,8 @@ interface ComparisonResult {
   modo_business: CostBreakdown;
   cheapest_option: string;
   savings: number; // Savings compared to next cheapest option
+  distance_km: number;
+  duration_minutes: number;
 }
 
 // Constants for car share rates
@@ -105,7 +107,6 @@ const OVERNIGHT_END_HOUR = 9; // 9am
  */
 function calculateEvoCost(params: TripParameters): CostBreakdown {
   const details: string[] = [];
-  console.log(params);
 
   // Calculate time-based cost using a more intelligent approach
   let timeCost: number;
@@ -182,14 +183,6 @@ function calculateEvoCost(params: TripParameters): CostBreakdown {
 
   // Calculate total
   const total = baseCost + taxAmount + pvrtAmount;
-  console.log("piss", {
-    timeCost,
-    distanceCost,
-    fees,
-    taxes: taxAmount + pvrtAmount,
-    discounts,
-    total,
-  });
   return {
     time_cost: timeCost,
     distance_cost: distanceCost,
@@ -259,46 +252,50 @@ function calculateModoCost(
 
   // Calculate total cost with regular hourly + distance
   let regularTotalCost = timeCost + distanceCost;
-  
+
   // Now check if Day Tripper rate would be cheaper for whole-day bookings
   if (params.duration_minutes >= 1440 && vehicleType !== "oversized") {
     // 24 hours * 60 = 1440 minutes
     const dayTripperRate = planRates.day_tripper[vehicleType];
     const dayTripperTimeCost = params.days * dayTripperRate;
-    
+
     // Calculate included kilometers with Day Tripper
     const includedKm = planRates.day_tripper.km_included * params.days;
-    
+
     // Calculate distance cost with Day Tripper (only pay for kilometers above included amount)
     const extraKm = Math.max(0, params.distance_km - includedKm);
     const dayTripperDistanceCost = extraKm * MODO_RATES.per_km;
-    
+
     // Calculate total cost with Day Tripper
     const dayTripperTotalCost = dayTripperTimeCost + dayTripperDistanceCost;
-    
+
     // Compare costs and use Day Tripper if cheaper
     if (dayTripperTotalCost < regularTotalCost) {
       // Update costs
       timeCost = dayTripperTimeCost;
       distanceCost = dayTripperDistanceCost;
-      
+
       // Update details
       details.push(
-        `Day Tripper rate applied: ${params.days} days × $${dayTripperRate.toFixed(2)} = $${timeCost.toFixed(2)}`
+        `Day Tripper rate applied: ${params.days} days × $${dayTripperRate.toFixed(2)} = $${timeCost.toFixed(2)}`,
       );
       details.push(`Included kilometers with Day Tripper: ${includedKm}`);
-      
+
       if (extraKm > 0) {
         details.push(
-          `Distance cost (over included): ${extraKm} extra km × $${MODO_RATES.per_km.toFixed(2)} = $${distanceCost.toFixed(2)}`
+          `Distance cost (over included): ${extraKm} extra km × $${MODO_RATES.per_km.toFixed(2)} = $${distanceCost.toFixed(2)}`,
         );
       } else {
         details.push("All kilometers included in Day Tripper rate");
       }
-      
-      details.push(`Day Tripper total ($${dayTripperTotalCost.toFixed(2)}) is cheaper than regular rate ($${regularTotalCost.toFixed(2)})`);
+
+      details.push(
+        `Day Tripper total ($${dayTripperTotalCost.toFixed(2)}) is cheaper than regular rate ($${regularTotalCost.toFixed(2)})`,
+      );
     } else {
-      details.push(`Regular rate ($${regularTotalCost.toFixed(2)}) is cheaper than Day Tripper rate ($${dayTripperTotalCost.toFixed(2)})`);
+      details.push(
+        `Regular rate ($${regularTotalCost.toFixed(2)}) is cheaper than Day Tripper rate ($${dayTripperTotalCost.toFixed(2)})`,
+      );
     }
   }
 
@@ -353,7 +350,6 @@ function compareCarShareOptions(params: TripParameters): ComparisonResult {
   const modoPlusCost = calculateModoCost(params, "plus");
   const modoMonthlyCost = calculateModoCost(params, "monthly");
   const modoBusinessCost = calculateModoCost(params, "business");
-  console.log(evoCost);
   // Find the cheapest option
   const options = [
     { name: "Evo", cost: evoCost.total },
@@ -377,6 +373,8 @@ function compareCarShareOptions(params: TripParameters): ComparisonResult {
     modo_business: modoBusinessCost,
     cheapest_option: cheapest.name,
     savings,
+    distance_km: params.distance_km,
+    duration_minutes: params.duration_minutes,
   };
 }
 
@@ -410,16 +408,6 @@ function convertBookingToTripParameters(
   }
 
   const is_overnight = overnight_minutes > 0;
-  console.log("balls", {
-    duration_minutes,
-    distance_km,
-    is_overnight,
-    overnight_minutes,
-    days,
-    is_bcaa_member,
-    vehicle_preference,
-    is_ev,
-  });
   return {
     duration_minutes,
     distance_km,
@@ -431,40 +419,6 @@ function convertBookingToTripParameters(
     is_ev,
   };
 }
-
-// // Example usage
-// const tripParams = convertBookingToTripParameters(
-//   new Date("2025-03-17T14:00:00"), // 2pm today
-//   new Date("2025-03-18T10:00:00"), // 10am tomorrow
-//   75, // 75 km
-//   true, // BCAA member
-//   "daily_drive", // Regular car
-//   false, // Not an EV
-// );
-
-// const result = compareCarShareOptions(tripParams);
-
-// console.log("Trip Parameters:");
-// console.log(tripParams);
-// console.log("\nComparison Result:");
-// console.log(
-//   `Cheapest option: ${result.cheapest_option} ($${
-//     result.cheapest_option === "Evo"
-//       ? result.evo.total.toFixed(2)
-//       : result.cheapest_option === "Modo Plus"
-//         ? result.modo_plus.total.toFixed(2)
-//         : result.cheapest_option === "Modo Monthly"
-//           ? result.modo_monthly.total.toFixed(2)
-//           : result.modo_business.total.toFixed(2)
-//   })`,
-// );
-// console.log(`Savings: $${result.savings.toFixed(2)}`);
-
-// console.log("\nEvo Details:");
-// result.evo.details.forEach((detail) => console.log(`- ${detail}`));
-
-// console.log("\nModo Plus Details:");
-// result.modo_plus.details.forEach((detail) => console.log(`- ${detail}`));
 
 // Create a function to optimize multiple trips
 function optimizeMultipleTrips(trips: TripParameters[]): string {
