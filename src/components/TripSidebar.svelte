@@ -2,7 +2,7 @@
   import Address from "./Address.svelte";
   import type { ComparisonCalc, TripState } from "./TripTypes";
   // Get current location on component mount
-
+  type ExpandedStage = "mini" | "partial" | "full";
   // Update the map with coordinates
   let {
     originCoordinate = $bindable(),
@@ -38,9 +38,42 @@
 
   let isFormView = $state(true);
   let isLoading = $state(false);
+  function toggleExpandedStage(stage: ExpandedStage) {
+    if (stage === "mini") {
+      return "partial";
+    }
+    if (stage === "partial") {
+      return "full";
+    }
+    return "mini";
+  }
+  // Add toggle state variables for each card
+  let evoExpandedStage = $state<ExpandedStage>("mini");
+  let modoMonthlyExpandedStage = $state<ExpandedStage>("mini");
+  let modoPlusExpandedStage = $state<ExpandedStage>("mini");
+
+  type CostOption = {
+    label: string;
+    total: number;
+    details: string[];
+    time_cost: number;
+    distance_cost?: number;
+    fees: number;
+    taxes: number;
+    discounts?: number;
+    expandedStage: ExpandedStage;
+    setExpandedStage: (stage: ExpandedStage) => void;
+  };
+
+  function editForm() {
+    isFormView = true;
+    evoExpandedStage = "mini";
+    modoMonthlyExpandedStage = "mini";
+    modoPlusExpandedStage = "mini";
+  }
 </script>
 
-<div class="w-full h-full overflow-y-auto p-5 bg-white shadow-md">
+<div class="w-full h-full overflow-y-auto p-5 bg-stone-50 shadow-md">
   {#if isFormView}
     <!-- Form View -->
     <div class="space-y-6">
@@ -162,7 +195,25 @@
     </div>
   {:else}
     {#await comparisonResult}
-      Loading...
+      <div class="flex justify-center items-center h-full">
+        <div class="flex flex-col items-center">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="animate-spin w-14 h-14"
+          >
+            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+          </svg>
+          <div class="text-gray-800">Calculating All of the Things...</div>
+        </div>
+      </div>
     {:then result}
       {#if !result}
         <!-- Do nothing -->
@@ -178,9 +229,7 @@
           <div class="flex justify-between items-center">
             <h1 class="text-2xl font-bold text-gray-800">Trip Results</h1>
             <button
-              onclick={() => {
-                isFormView = true;
-              }}
+              onclick={editForm}
               class="text-sm text-gray-600 hover:text-gray-800 underline"
             >
               Edit Trip
@@ -236,89 +285,135 @@
                 </p>
               </div>
 
-              <!-- Evo Cost -->
-              <div class="border border-gray-200 rounded-md overflow-hidden">
-                <div class="bg-gray-800 text-white p-3 font-bold">
-                  Evo: ${result.data.evo.total.toFixed(2)}
-                </div>
-                <div class="p-3 space-y-2">
-                  <div class="flex justify-between text-sm">
-                    <span>Time cost:</span>
-                    <span>${result.data.evo.time_cost.toFixed(2)}</span>
-                  </div>
-                  <div class="flex justify-between text-sm">
-                    <span>Fees:</span>
-                    <span>${result.data.evo.fees.toFixed(2)}</span>
-                  </div>
-                  <div class="flex justify-between text-sm">
-                    <span>Taxes:</span>
-                    <span>${result.data.evo.taxes.toFixed(2)}</span>
-                  </div>
-                  {#if result.data.evo.discounts > 0}
-                    <div class="flex justify-between text-sm text-green-600">
-                      <span>Discounts:</span>
-                      <span>-${result.data.evo.discounts.toFixed(2)}</span>
+              {#snippet costCard(option: CostOption)}
+                <div class="border border-gray-200 rounded-md overflow-hidden">
+                  <button
+                    class="w-full bg-gray-800 text-white p-3 font-bold flex justify-between items-center cursor-pointer"
+                    onclick={() =>
+                      option.setExpandedStage(
+                        toggleExpandedStage(option.expandedStage),
+                      )}
+                  >
+                    <span>{option.label}: ${option.total.toFixed(2)}</span>
+
+                    {#if option.expandedStage === "mini"}
+                      <!-- Three dots icon -->
+                      <svg
+                        class="w-5 h-5"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <circle cx="6" cy="12" r="2" />
+                        <circle cx="12" cy="12" r="2" />
+                        <circle cx="18" cy="12" r="2" />
+                      </svg>
+                    {:else if option.expandedStage === "partial"}
+                      <!-- Two dots icon -->
+                      <svg
+                        class="w-5 h-5"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <circle cx="9" cy="12" r="2" />
+                        <circle cx="15" cy="12" r="2" />
+                      </svg>
+                    {:else}
+                      <!-- X icon -->
+                      <svg
+                        class="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    {/if}
+                  </button>
+
+                  {#if option.expandedStage === "full"}
+                    <div class="p-3 bg-inherit">
+                      <div
+                        class="border border-gray-200 bg-gray-200 rounded-md p-1 flex flex-col gap-1"
+                      >
+                        {#each option.details as detail}
+                          <span class="text-sm">{detail}</span>
+                        {/each}
+                      </div>
                     </div>
                   {/if}
-                </div>
-              </div>
 
-              <!-- Modo Plus Cost -->
-              <div class="border border-gray-200 rounded-md overflow-hidden">
-                <div class="bg-gray-800 text-white p-3 font-bold">
-                  Modo Plus: ${result.data.modo_plus.total.toFixed(2)}
-                </div>
-                <div class="p-3 space-y-2">
-                  <div class="flex justify-between text-sm">
-                    <span>Time cost:</span>
-                    <span>${result.data.modo_plus.time_cost.toFixed(2)}</span>
-                  </div>
-                  <div class="flex justify-between text-sm">
-                    <span>Distance cost:</span>
-                    <span
-                      >${result.data.modo_plus.distance_cost.toFixed(2)}</span
-                    >
-                  </div>
-                  <div class="flex justify-between text-sm">
-                    <span>Fees:</span>
-                    <span>${result.data.modo_plus.fees.toFixed(2)}</span>
-                  </div>
-                  <div class="flex justify-between text-sm">
-                    <span>Taxes:</span>
-                    <span>${result.data.modo_plus.taxes.toFixed(2)}</span>
-                  </div>
-                </div>
-              </div>
+                  {#if option.expandedStage === "partial" || option.expandedStage === "full"}
+                    <div class="p-3 space-y-2 bg-inherit">
+                      <div class="flex justify-between text-sm">
+                        <span>Time cost:</span>
+                        <span>${option.time_cost.toFixed(2)}</span>
+                      </div>
+                      {#if option.distance_cost !== undefined}
+                        <div class="flex justify-between text-sm">
+                          <span>Distance cost:</span>
+                          <span>${option.distance_cost.toFixed(2)}</span>
+                        </div>
+                      {/if}
+                      <div class="flex justify-between text-sm">
+                        <span>Fees:</span>
+                        <span>${option.fees.toFixed(2)}</span>
+                      </div>
+                      <div class="flex justify-between text-sm">
+                        <span>Taxes:</span>
+                        <span>${option.taxes.toFixed(2)}</span>
+                      </div>
+                      {#if option.discounts && option.discounts > 0}
+                        <div
+                          class="flex justify-between text-sm text-green-600"
+                        >
+                          <span>Discounts:</span>
+                          <span>-${option.discounts.toFixed(2)}</span>
+                        </div>
+                      {/if}
+                    </div>
+                  {/if}
 
-              <!-- Modo Monthly Cost -->
-              <div class="border border-gray-200 rounded-md overflow-hidden">
-                <div class="bg-gray-800 text-white p-3 font-bold">
-                  Modo Monthly: ${result.data.modo_monthly.total.toFixed(2)}
-                </div>
-                <div class="p-3 space-y-2">
-                  <div class="flex justify-between text-sm">
-                    <span>Time cost:</span>
-                    <span>${result.data.modo_monthly.time_cost.toFixed(2)}</span
-                    >
-                  </div>
-                  <div class="flex justify-between text-sm">
-                    <span>Distance cost:</span>
-                    <span
-                      >${result.data.modo_monthly.distance_cost.toFixed(
-                        2,
-                      )}</span
-                    >
-                  </div>
-                  <div class="flex justify-between text-sm">
-                    <span>Fees:</span>
-                    <span>${result.data.modo_monthly.fees.toFixed(2)}</span>
-                  </div>
-                  <div class="flex justify-between text-sm">
-                    <span>Taxes:</span>
-                    <span>${result.data.modo_monthly.taxes.toFixed(2)}</span>
+                  <!-- Always visible summary footer -->
+                  <div class="p-3 border-t border-gray-200 bg-white">
+                    <div class="flex justify-between font-medium">
+                      <span>Total Cost:</span>
+                      <span>${option.total.toFixed(2)}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              {/snippet}
+
+              <!-- Evo Card -->
+              {@render costCard({
+                label: "Evo",
+                ...result.data.evo,
+                expandedStage: evoExpandedStage,
+                setExpandedStage: (stage) => (evoExpandedStage = stage),
+              })}
+
+              <!-- Modo Plus Card -->
+              {@render costCard({
+                label: "Modo Plus",
+                ...result.data.modo_plus,
+                expandedStage: modoPlusExpandedStage,
+                setExpandedStage: (stage) => (modoPlusExpandedStage = stage),
+              })}
+
+              <!-- Modo Monthly Card -->
+              {@render costCard({
+                label: "Modo Monthly",
+                ...result.data.modo_monthly,
+                expandedStage: modoMonthlyExpandedStage,
+                setExpandedStage: (stage) => (modoMonthlyExpandedStage = stage),
+              })}
             </div>
           </div>
         </div>

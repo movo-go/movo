@@ -150,10 +150,8 @@ function calculateEvoCost(params: TripParameters): CostBreakdown {
   let remainingMinutes: number;
   let remainingHours: number;
   let finalRemainingMinutes: number;
-  console.log("EVO PARAMS", params);
 
   let doubleUnlockFee = false;
-  console.log("minutesToBeWorthUnlockFee", MINUTES_TO_BE_WORTH_UNLOCK_FEE);
 
   // if not in home zone you are cooked anyways
   if (!params.end_is_in_evo_home_zone) {
@@ -170,8 +168,8 @@ function calculateEvoCost(params: TripParameters): CostBreakdown {
       usedMinutes = params.driving_minutes;
     }
   }
+  console.log("usedMinutes", usedMinutes);
   const roundedToNearestMinute = Math.ceil(usedMinutes);
-  console.log("roundedToNearestMinute", roundedToNearestMinute);
   fullDays = Math.floor(roundedToNearestMinute / (24 * 60));
   remainingMinutes = roundedToNearestMinute % (24 * 60);
   remainingHours = Math.floor(remainingMinutes / 60);
@@ -273,7 +271,6 @@ function calculateModo24HourCost(
   params: ModoProps,
   planType: "plus" | "monthly" | "business",
 ): Modo24HourCost {
-  console.log("Piss params", params);
   if (params.minutes > 1440) {
     throw new Error("Total minutes cannot be greater than 1440");
   }
@@ -312,7 +309,6 @@ function calculateModo24HourCost(
         nightMinutes += 1;
       }
     }
-    console.log("nightMinutes", nightMinutes);
   }
   const cappedNightMinutes = Math.min(nightMinutes, 180); // 3 hours
   // if booking has night minutes and has regular minutes, would need to cap both to 12 hours
@@ -343,6 +339,7 @@ function calculateModo24HourCost(
     const totalDayTripperCost =
       result.day_tripper_cost + result.day_tripper_distance_overage_cost;
     if (totalDayTripperCost < result.total) {
+      // day tripper rate is cheaper
       result.day_tripper_applied = true;
       result.total = totalDayTripperCost;
       result.details.push(`Day Tripper rate applied`);
@@ -350,7 +347,31 @@ function calculateModo24HourCost(
       result.distance_cost = 0;
     }
   }
-  console.log("result", result);
+
+  if (result.day_tripper_applied) {
+    result.details.push(
+      `Day Tripper rate applied: ${result.day_tripper_cost}${result.day_tripper_distance_overage_cost > 0 ? ` + ${result.day_tripper_distance_overage_cost}` : ""} = $${result.total.toFixed(2)}`,
+    );
+  } else {
+    console.log("cappedNightMinutes", cappedNightMinutes);
+    if (cappedNightMinutes > 0) {
+      result.details.push(
+        `Regular rate applied: ${cappedNightMinutes / 60} hours × $${hourlyRate.toFixed(2)} + ${regularMinutes / 60} hours × $${hourlyRate.toFixed(2)} = $${regularCost.toFixed(2)}`,
+      );
+    } else {
+      result.details.push(
+        `Regular rate applied: ${regularMinutes / 60} hours × $${hourlyRate.toFixed(2)} = $${regularCost.toFixed(2)}`,
+      );
+    }
+
+    // details of distance
+    result.details.push(
+      `Distance cost: ${params.km} km × $${MODO_RATES.per_km.toFixed(2)} = $${result.distance_cost.toFixed(2)}`,
+    );
+  }
+
+  console.log("OAKEPSAOke", result);
+
   return result;
 }
 
@@ -358,16 +379,10 @@ function calculateModoCost(
   params: TripParameters,
   planType: "plus" | "monthly" | "business",
 ): CostBreakdown {
-  console.log("Poo params", params);
   const vehicle_type = params.vehicle_preference ?? "daily_drive";
-  // start_date: Date;
-  // driving_minutes: number; // Trip driving duration in minutes one way
-  // staying_minutes: number; // Trip stay duration in minutes
-  // distance_km: number; // Trip distance in kilometers one way
   const totalMinutes = params.driving_minutes * 2 + params.staying_minutes;
   // round up to 15 minutes
   const roundedUpTo15Minutes = Math.ceil(totalMinutes / 15) * 15;
-  console.log("roundedUpTo15Minutes", roundedUpTo15Minutes);
   // split into 24 hour intervals
   const endDay = addMinutes(params.start_date, roundedUpTo15Minutes);
   const daysArray = eachDayOfInterval(interval(params.start_date, endDay));
@@ -378,26 +393,18 @@ function calculateModoCost(
   );
   const results: Modo24HourCost[] = [];
   for (const [index, day] of daysArray.entries()) {
-    console.log("day", day);
     let km = 0;
     let minutesForDay = FULL_DAY_IN_MINUTES;
 
+    // first day drive to location
     if (index === 0) {
       km += params.distance_km;
     }
+    // last day drive back home if all on the same day, will be double distance!
     if (index === daysArray.length - 1) {
-      console.log("last day");
       km += params.distance_km;
       const minutesInDaysBeforeLastDay = index * FULL_DAY_IN_MINUTES;
       minutesForDay = roundedUpTo15Minutes - minutesInDaysBeforeLastDay;
-
-      console.log(
-        "roundedUpTo15Minutes",
-        roundedUpTo15Minutes,
-        index,
-        minutesInDaysBeforeLastDay,
-        minutesForDay,
-      );
     }
 
     // first and last day
@@ -407,9 +414,15 @@ function calculateModoCost(
       km,
       vehicle_type,
     };
-
-    results.push(calculateModo24HourCost(modoProps, planType));
+    const calculated = calculateModo24HourCost(modoProps, planType);
+    results.push({
+      ...calculated,
+      details: [...calculated.details],
+    });
+    console.log("calculated", calculated);
   }
+  console.log("adjaiojsoij", results);
+
   let subtotal = results.reduce((acc, result) => acc + result.total, 0);
   const time_cost = results.reduce((acc, result) => acc + result.time_cost, 0);
   const distance_cost = results.reduce(
@@ -428,11 +441,16 @@ function calculateModoCost(
         : acc,
     0,
   );
+  console.log("bejjjejeejee", [...results]);
 
   const details: string[] = [];
+  results.forEach((result) => {
+    console.log("result", result);
+    details.push(...result.details);
+  });
   // add details from each result
-  details.push(...results.flatMap((result) => result.details));
-
+  // details.push(...results.flatMap((result) => result.details));
+  console.log("details", details);
   // Add innovation fee
   const innovationFee = params.is_ev
     ? MODO_RATES.innovation_fee.ev

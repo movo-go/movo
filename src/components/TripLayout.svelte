@@ -75,11 +75,13 @@
     // Using the correct response structure from the updated directions.ts file
     const travelTime = result.directions.routes[0].expectedTravelTime;
     const travelDistance = result.directions.routes[0].distance;
+    console.log("traveldistance", travelDistance);
     // Calculate total trip time
     const travelTimeMinutes = Math.round((travelTime / 60) * 100) / 100;
 
     // Calculate days (24 hour periods)
-    const tripDistanceKm = Math.min(Math.round(travelDistance / 1000), 1);
+    let tripDistanceKm = Math.ceil(travelDistance / 1000);
+    console.log("tripDistanceKm", tripDistanceKm);
     // Now calculate the cost comparison
     const tripParams: TripParameters = {
       start_date: new Date(),
@@ -195,6 +197,7 @@
     );
   });
 
+  // TODO DEFINITELY A BUG HERE LOL
   function checkIfInEvoHomeZone(coordinate: mapkit.Coordinate) {
     console.log("checking if in evo home zone", coordinate);
     const point = map.convertCoordinateToPointOnPage(coordinate);
