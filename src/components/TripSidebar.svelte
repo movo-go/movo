@@ -71,6 +71,11 @@
     modoMonthlyExpandedStage = "mini";
     modoPlusExpandedStage = "mini";
   }
+
+  // Function to toggle boolean chip values
+  function toggleChip(value: boolean): boolean {
+    return !value;
+  }
 </script>
 
 <div class="w-full h-full overflow-y-auto p-5 bg-stone-50 shadow-md">
@@ -118,45 +123,67 @@
             class="border-2 border-gray-800 px-2 py-3 bg-transparent w-full mt-1"
           />
         </div>
-        <div>
-          <label
-            for="round-trip-required"
-            class="block text-sm text-gray-700 font-medium"
-          >
-            Round Trip Required
-          </label>
-          <input
-            id="round-trip-required"
-            type="checkbox"
-            bind:checked={roundTripRequired}
-          />
+
+        {#snippet toggleChipComponent(
+          value: boolean,
+          label: string,
+          minWidth: string,
+          inputId: string,
+          onToggle: (newValue: boolean) => void,
+        )}
+          <div>
+            <input
+              id={inputId}
+              type="checkbox"
+              checked={value}
+              class="hidden"
+            />
+            <button
+              type="button"
+              class={`${minWidth} h-12 text-center px-4 py-2 rounded-full border-2 transition-colors duration-200 font-medium ${
+                value
+                  ? "bg-gray-800 text-white border-gray-800"
+                  : "bg-transparent text-gray-800 border-gray-300"
+              }`}
+              onclick={() => onToggle(toggleChip(value))}
+            >
+              <span class="flex justify-center items-center">
+                <span class="text-sm">{label}</span>
+                {#if value}
+                  <span class="ml-1">✓</span>
+                {/if}
+              </span>
+            </button>
+          </div>
+        {/snippet}
+
+        <div class="mt-6">
+          <h3 class="text-sm font-semibold text-gray-700 mb-3">Options</h3>
+          <div class="flex flex-wrap gap-3">
+            {@render toggleChipComponent(
+              roundTripRequired,
+              "Round Trip",
+              "min-w-[130px]",
+              "round-trip-required",
+              (newValue) => (roundTripRequired = newValue),
+            )}
+            {@render toggleChipComponent(
+              bcaaMembership,
+              "BCAA Member",
+              "min-w-[130px]",
+              "bcaa-membership",
+              (newValue) => (bcaaMembership = newValue),
+            )}
+            {@render toggleChipComponent(
+              electricVehicle,
+              "Electric Vehicle",
+              "min-w-[150px]",
+              "electric-vehicle",
+              (newValue) => (electricVehicle = newValue),
+            )}
+          </div>
         </div>
-        <div>
-          <label
-            for="bcaa-membership"
-            class="block text-sm text-gray-700 font-medium"
-          >
-            BCAA Membership
-          </label>
-          <input
-            id="bcaa-membership"
-            type="checkbox"
-            bind:checked={bcaaMembership}
-          />
-        </div>
-        <div>
-          <label
-            for="electric-vehicle"
-            class="block text-sm text-gray-700 font-medium"
-          >
-            Electric Vehicle
-          </label>
-          <input
-            id="electric-vehicle"
-            type="checkbox"
-            bind:checked={electricVehicle}
-          />
-        </div>
+
         <div>
           <label
             for="vehicle-type"
