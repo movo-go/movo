@@ -1,17 +1,15 @@
 // Import date-fns functions at the top of the file
 import {
-  getHours,
-  eachHourOfInterval,
-  differenceInMinutes,
-  addMinutes,
-  interval,
-  startOfDay,
-  addHours,
-  isWithinInterval,
   addDays,
+  addHours,
+  addMinutes,
   areIntervalsOverlapping,
-  eachMinuteOfInterval,
+  differenceInMinutes,
   eachDayOfInterval,
+  eachMinuteOfInterval,
+  interval,
+  isWithinInterval,
+  startOfDay,
 } from "date-fns";
 
 // Define the types for our parameters and results
@@ -490,153 +488,6 @@ function calculateModoCost(
   };
 }
 
-// /**
-//  * Calculate the cost for Modo car share
-//  */
-// function calculateModoCost(
-//   params: TripParameters,
-//   planType: "plus" | "monthly" | "business",
-// ): CostBreakdown {
-//   const details: string[] = [];
-
-//   // Select the plan rates
-//   const planRates = MODO_RATES[planType];
-
-//   // Determine vehicle type and rate
-//   const vehicleType = params.vehicle_preference || "daily_drive";
-//   const hourlyRate = planRates[vehicleType];
-//   details.push(
-//     `Vehicle type: ${vehicleType}, Hourly rate: $${hourlyRate.toFixed(2)}`,
-//   );
-
-//   // Calculate time cost with overnight and daily caps
-//   let effectiveMinutes = params.driving_minutes * 2 + params.staying_minutes;
-
-//   // Apply overnight cap if applicable (max 3 hours / 180 minutes between 6pm-9am)
-//   if (params.is_overnight && params.overnight_minutes > 0) {
-//     const nonOvernightMinutes =
-//       params.duration_minutes - params.overnight_minutes;
-//     const cappedOvernightMinutes = Math.min(180, params.overnight_minutes); // 3 hours * 60 minutes
-//     effectiveMinutes = nonOvernightMinutes + cappedOvernightMinutes;
-//     details.push(
-//       `Overnight cap applied: ${params.overnight_minutes} overnight minutes capped to ${cappedOvernightMinutes} minutes`,
-//     );
-//   }
-
-//   // Convert to hours for further calculations
-//   let effectiveHours = effectiveMinutes / 60;
-
-//   // Apply 12-hour daily cap if applicable
-//   const dailyCappedHours =
-//     params.days * 12 + (effectiveHours % 24 > 12 ? 12 : effectiveHours % 24);
-//   effectiveHours = Math.min(effectiveHours, dailyCappedHours);
-//   details.push(
-//     `Effective billable hours after caps: ${effectiveHours.toFixed(2)}`,
-//   );
-
-//   // Calculate regular time cost
-//   let timeCost = effectiveHours * hourlyRate;
-//   details.push(
-//     `Time cost: ${effectiveHours.toFixed(2)} hours × $${hourlyRate.toFixed(2)} = $${timeCost.toFixed(2)}`,
-//   );
-
-//   // Calculate regular distance cost first
-//   let distanceCost = params.distance_km * MODO_RATES.per_km;
-//   details.push(
-//     `Distance cost (regular rate): ${params.distance_km} km × $${MODO_RATES.per_km.toFixed(2)} = $${distanceCost.toFixed(2)}`,
-//   );
-
-//   // Calculate total cost with regular hourly + distance
-//   let regularTotalCost = timeCost + distanceCost;
-
-//   // Now check if Day Tripper rate would be cheaper for whole-day bookings
-//   if (effectiveMinutes >= FULL_DAY_IN_MINUTES && vehicleType !== "oversized") {
-//     // 24 hours * 60 = 1440 minutes
-//     const dayTripperRate = planRates.day_tripper[vehicleType];
-//     const dayTripperTimeCost = params.days * dayTripperRate;
-
-//     // Calculate included kilometers with Day Tripper
-//     const includedKm = planRates.day_tripper.km_included * params.days;
-
-//     // Calculate distance cost with Day Tripper (only pay for kilometers above included amount)
-//     const extraKm = Math.max(0, params.distance_km - includedKm);
-//     const dayTripperDistanceCost = extraKm * MODO_RATES.per_km;
-
-//     // Calculate total cost with Day Tripper
-//     const dayTripperTotalCost = dayTripperTimeCost + dayTripperDistanceCost;
-
-//     // Compare costs and use Day Tripper if cheaper
-//     if (dayTripperTotalCost < regularTotalCost) {
-//       // Update costs
-//       timeCost = dayTripperTimeCost;
-//       distanceCost = dayTripperDistanceCost;
-
-//       // Update details
-//       details.push(
-//         `Day Tripper rate applied: ${params.days} days × $${dayTripperRate.toFixed(2)} = $${timeCost.toFixed(2)}`,
-//       );
-//       details.push(`Included kilometers with Day Tripper: ${includedKm}`);
-
-//       if (extraKm > 0) {
-//         details.push(
-//           `Distance cost (over included): ${extraKm} extra km × $${MODO_RATES.per_km.toFixed(2)} = $${distanceCost.toFixed(2)}`,
-//         );
-//       } else {
-//         details.push("All kilometers included in Day Tripper rate");
-//       }
-
-//       details.push(
-//         `Day Tripper total ($${dayTripperTotalCost.toFixed(2)}) is cheaper than regular rate ($${regularTotalCost.toFixed(2)})`,
-//       );
-//     } else {
-//       details.push(
-//         `Regular rate ($${regularTotalCost.toFixed(2)}) is cheaper than Day Tripper rate ($${dayTripperTotalCost.toFixed(2)})`,
-//       );
-//     }
-//   }
-
-//   // Add innovation fee
-//   const innovationFee = params.is_ev
-//     ? MODO_RATES.innovation_fee.ev
-//     : MODO_RATES.innovation_fee.non_ev;
-//   details.push(
-//     `Co-op innovation fee: $${innovationFee.toFixed(2)} (${params.is_ev ? "EV" : "non-EV"})`,
-//   );
-
-//   // Calculate taxes
-//   const baseCost = timeCost + distanceCost + innovationFee;
-//   let taxAmount = baseCost * (TAXES.gst + TAXES.pst);
-//   let pvrtAmount = 0;
-
-//   // Add PVRT for trips 8+ hours (480+ minutes), except for 28+ day bookings
-//   if (params.driving_minutes >= EIGHT_HOURS_IN_MINUTES && params.days < 28) {
-//     pvrtAmount = TAXES.pvrt * params.days;
-//     const pvrtTax = pvrtAmount * TAXES.gst;
-//     taxAmount += pvrtTax;
-//     details.push(
-//       `PVRT: $${TAXES.pvrt.toFixed(2)} × ${params.days} days = $${pvrtAmount.toFixed(2)}`,
-//     );
-//     details.push(`GST on PVRT: $${pvrtTax.toFixed(2)}`);
-//   }
-
-//   details.push(
-//     `Base taxes (GST + PST): $${(baseCost * (TAXES.gst + TAXES.pst)).toFixed(2)}`,
-//   );
-
-//   // Calculate total
-//   const total = baseCost + taxAmount + pvrtAmount;
-
-//   return {
-//     time_cost: timeCost,
-//     distance_cost: distanceCost,
-//     fees: innovationFee,
-//     taxes: taxAmount + pvrtAmount,
-//     discounts: 0,
-//     total,
-//     details,
-//   };
-// }
-
 /**
  * Compare all options and find the cheapest
  */
@@ -672,51 +523,6 @@ function compareCarShareOptions(params: TripParameters): ComparisonResult {
     savings,
     distance_km: params.distance_km,
     travel_time_minutes_one_way: travel_time_minutes,
-  };
-}
-
-/**
- * @deprecated Womp Womp
- * Function to convert booking parameters to required TripParameters
- */
-function convertBookingToTripParameters(
-  startDate: Date,
-  endDate: Date,
-  distance_km: number,
-  is_bcaa_member: boolean,
-  end_is_in_evo_home_zone: boolean,
-  vehicle_preference?: "daily_drive" | "large_loadable" | "oversized",
-  is_ev?: boolean,
-): TripParameters {
-  // Calculate duration in minutes using date-fns
-  const duration_minutes = differenceInMinutes(endDate, startDate); // Convert to minutes
-
-  // Calculate number of 24-hour periods (days)
-  // const days = Math.ceil(differenceInDays(endDate, startDate));
-
-  // Calculate overnight minutes
-  let overnight_minutes = 0;
-
-  // Get all hours in the interval
-  const hours = eachHourOfInterval({ start: startDate, end: endDate });
-
-  // Count minutes that fall within overnight hours (6pm-9am)
-  for (const hour of hours) {
-    const hourOfDay = getHours(hour);
-    if (hourOfDay >= OVERNIGHT_START_HOUR || hourOfDay < OVERNIGHT_END_HOUR) {
-      overnight_minutes += 60; // Add 60 minutes for each overnight hour
-    }
-  }
-  return {
-    start_date: startDate,
-    distance_km,
-    is_bcaa_member,
-    vehicle_preference,
-    end_is_in_evo_home_zone,
-    round_trip_required: true,
-    driving_minutes: duration_minutes,
-    staying_minutes: 0,
-    is_ev,
   };
 }
 
@@ -782,9 +588,8 @@ export {
   calculateEvoCost,
   calculateModoCost,
   compareCarShareOptions,
-  convertBookingToTripParameters,
   optimizeMultipleTrips,
-  type TripParameters,
-  type CostBreakdown,
   type ComparisonResult,
+  type CostBreakdown,
+  type TripParameters,
 };

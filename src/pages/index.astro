@@ -1,11 +1,11 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import Form from "../components/Form.svelte";
+import TripLayout from "../components/TripLayout.svelte";
+import { getCollection } from "astro:content";
+
+const homezones = await getCollection("homezones");
 ---
 
-<Layout title="Welcome to Astro.">
-  <main class="p-4 h-full flex flex-col justify-around">
-    <h1 class="text-3xl font-serif">Plan your trip</h1>
-    <Form client:load />
-  </main>
+<Layout title="Go">
+  <TripLayout client:load homezones={homezones} />
 </Layout>
