@@ -1,6 +1,5 @@
 <script lang="ts">
   import TripSidebar from "./TripSidebar.svelte";
-  import type { CollectionEntry } from "astro:content";
   import type { ComparisonCalc, TripState } from "./TripTypes";
   import {
     calculateDirection,
@@ -9,9 +8,8 @@
   } from "../calculations";
   import { onMount } from "svelte";
   import { getMapKit } from "../utilities/mapkit";
-  const {
-    homezones,
-  }: TripState & { homezones: CollectionEntry<"homezones">[] } = $props();
+  import type { Homezone } from "../types/evo";
+  const { homezones }: { homezones: Homezone[] } = $props();
 
   let tripState = $state<TripState>({
     originCoordinate: undefined,
@@ -177,7 +175,7 @@
       // map.region = region;
 
       homezones.forEach((homezone) => {
-        const zone = homezone.data.zone;
+        const zone = homezone.zone;
         const items = mapkitInstance.importGeoJSON(zone);
         if (items instanceof Error) {
           throw items;

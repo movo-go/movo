@@ -1,11 +1,11 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @theme {
   --font-sans:
-    'David Libre', 'Georgia', ui-sans-serif, system-ui, sans-serif,
-    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    "David Libre", "Georgia", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-serif:
-    'Cardo', 'Georgia', ui-serif, Georgia, Cambria, 'Times New Roman', Times,
+    "Cardo", "Georgia", ui-serif, Georgia, Cambria, "Times New Roman", Times,
     serif;
 }
 
