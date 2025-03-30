@@ -87,11 +87,9 @@
       <div class="space-y-4">
         <div>
           <Address
-            textLabel="Origin"
             bind:value={origin}
-            class="w-full"
+            label="Origin"
             placeholder="Starting location"
-            required
           />
           <p class="text-xs text-gray-500 mt-1">
             We'll try to use your current location if allowed
@@ -100,11 +98,9 @@
 
         <div>
           <Address
-            textLabel="Destination"
             bind:value={destination}
-            class="w-full"
+            label="Destination"
             placeholder="Where do you want to go?"
-            required
           />
         </div>
 

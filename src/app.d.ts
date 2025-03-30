@@ -8,10 +8,10 @@ declare global {
     // interface PageState {}
     // interface Platform {}
   }
-}
 
-declare interface Window {
-  initMapKit?: () => void;
+  declare interface Window {
+    initMapKit?: () => void;
+  }
 }
 
 export {};
