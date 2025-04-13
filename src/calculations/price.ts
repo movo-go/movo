@@ -1,4 +1,5 @@
 // Import date-fns functions at the top of the file
+import pointsWithinPolygon from "@turf/points-within-polygon";
 import {
   addDays,
   addHours,
@@ -11,6 +12,8 @@ import {
   isWithinInterval,
   startOfDay,
 } from "date-fns";
+import type { Feature, FeatureCollection, Point, Polygon } from "geojson";
+import type { Homezone } from "../types/evo";
 
 // Define the types for our parameters and results
 
@@ -583,6 +586,37 @@ function optimizeMultipleTrips(trips: TripParameters[]): string {
   return `Best strategy: ${cheapest.name} (Total cost: $${cheapest.cost.toFixed(2)})`;
 }
 
+export function isInHomeZone(
+  homezones: Homezone[],
+  coordinate: mapkit.Coordinate,
+): boolean {
+  const point: Feature<Point> = {
+    type: "Feature",
+    properties: {},
+    geometry: {
+      type: "Point",
+      coordinates: [coordinate.longitude, coordinate.latitude],
+    },
+  };
+
+  const collection: FeatureCollection<Polygon> = {
+    type: "FeatureCollection",
+    features: homezones.flatMap((homezone) =>
+      homezone.zone.features.filter((feature): feature is Feature<Polygon> => {
+        return feature.geometry.type === "Polygon";
+      }),
+    ),
+  };
+
+  console.log(`Number of polygons: ${collection.features.length}`);
+
+  const pointsWithin = pointsWithinPolygon(point, collection);
+
+  console.log(`Number of points within: ${pointsWithin.features.length}`);
+
+  return pointsWithin.features.length > 0;
+}
+
 // Export functions for use in your app
 export {
   calculateEvoCost,
@@ -591,5 +625,6 @@ export {
   optimizeMultipleTrips,
   type ComparisonResult,
   type CostBreakdown,
+  type Modo24HourCost,
   type TripParameters,
 };

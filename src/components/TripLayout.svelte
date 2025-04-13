@@ -4,6 +4,7 @@
   import {
     calculateDirection,
     compareCarShareOptions,
+    isInHomeZone,
     type TripParameters,
   } from "../calculations";
   import { onMount } from "svelte";
@@ -64,12 +65,7 @@
       };
     }
     state.route = result.directions.routes[0];
-    state.inEvoHomeZone = checkIfInEvoHomeZone(
-      new mapkitInstance.Coordinate(
-        state.destinationCoordinate.latitude,
-        state.destinationCoordinate.longitude,
-      ),
-    );
+    state.inEvoHomeZone = isInHomeZone(homezones, state.destinationCoordinate);
     // Using the correct response structure from the updated directions.ts file
     const travelTime = result.directions.routes[0].expectedTravelTime;
     const travelDistance = result.directions.routes[0].distance;
@@ -194,15 +190,6 @@
         })),
     );
   });
-
-  // TODO DEFINITELY A BUG HERE LOL
-  function checkIfInEvoHomeZone(coordinate: mapkit.Coordinate) {
-    console.log("checking if in evo home zone", coordinate);
-    const point = map.convertCoordinateToPointOnPage(coordinate);
-    const overlays = map.overlaysAtPoint(point);
-    console.log("overlays", overlays);
-    return overlays.length > 0;
-  }
 </script>
 
 <div class="w-full h-screen flex flex-col lg:flex-row">
