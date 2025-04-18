@@ -78,11 +78,13 @@
   }
 </script>
 
-<div class="w-full h-full overflow-y-auto p-5 bg-stone-50 shadow-md">
+<div class="w-full h-full overflow-y-auto md:p-5 bg-stone-50 shadow-md">
   {#if isFormView}
     <!-- Form View -->
     <div class="space-y-6">
-      <h1 class="text-2xl font-bold text-gray-800">Plan Your Trip</h1>
+      <h1 class="hidden md:block text-2xl font-bold text-gray-800">
+        Plan Your Trip
+      </h1>
 
       <div class="space-y-4">
         <div>
@@ -114,9 +116,8 @@
           <input
             id="stay-duration"
             type="number"
-            min="0"
             bind:value={stayDuration}
-            class="border-2 border-gray-800 px-2 py-3 bg-transparent w-full mt-1"
+            min="0"
           />
         </div>
 

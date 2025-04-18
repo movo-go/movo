@@ -10,6 +10,7 @@
   import { onMount } from "svelte";
   import { getMapKit } from "../utilities/mapkit";
   import type { Homezone } from "../types/evo";
+  import { Drawer } from "vaul-svelte";
   const { homezones }: { homezones: Homezone[] } = $props();
 
   let tripState = $state<TripState>({
@@ -110,6 +111,9 @@
     latitude: 49.28091630159075,
     longitude: -123.11395918331695,
   };
+  const snapPoints: (number | string)[] = ["70px", 0.4, 0.7, 1];
+
+  let currentSnapPoint = $state<number | string>(snapPoints[0]);
 
   $effect(() => {
     if (tripState.route) {
@@ -154,6 +158,9 @@
           new mapkitInstance.CoordinateSpan(defaultDelta, defaultDelta),
         ),
       });
+      // after creating map ensure overlay is on screen??
+      currentSnapPoint = snapPoints[0];
+
       map.addEventListener("user-location-change", (event) => {
         console.log("user-location-change", event);
         tripState.originCoordinate = event.coordinate;
@@ -192,8 +199,8 @@
   });
 </script>
 
-<div class="w-full h-screen flex flex-col lg:flex-row">
-  <div class="w-full lg:w-96 overflow-auto">
+<div class="w-full h-screen flex">
+  <div class="hidden md:block md:max-w-96">
     <TripSidebar
       bind:originCoordinate={tripState.originCoordinate}
       bind:destinationCoordinate={tripState.destinationCoordinate}
@@ -208,8 +215,48 @@
       calculateTripDetails={onSubmit}
     />
   </div>
-
-  <div class="flex-1">
+  <div
+    class="absolute md:static md:block w-screen h-screen md:w-full md:h-full md:grow"
+  >
     <div class="w-full h-full" bind:this={mapElement}></div>
   </div>
+  <Drawer.Root
+    modal={false}
+    defaultOpen
+    open={true}
+    dismissible={false}
+    {snapPoints}
+    bind:activeSnapPoint={currentSnapPoint}
+    onActiveSnapPointChange={(point) => {
+      console.log("yuh", point);
+    }}
+  >
+    <Drawer.Portal>
+      <Drawer.Overlay class="fixed inset-0 bg-black/40 md:hidden" />
+      <Drawer.Content
+        class="bg-stone-50 flex flex-col fixed bottom-0 left-0 right-0 max-h-[96%] rounded-t-[10px] md:hidden"
+      >
+        <div class="h-full bg-stone-50">
+          <div class="p-1">
+            <Drawer.Handle class="bg-stone-500!" />
+          </div>
+          <div class="px-2">
+            <TripSidebar
+              bind:originCoordinate={tripState.originCoordinate}
+              bind:destinationCoordinate={tripState.destinationCoordinate}
+              inEvoHomeZone={tripState.inEvoHomeZone}
+              bind:stayDuration={tripState.stayDuration}
+              bind:bcaaMembership={tripState.bcaaMembership}
+              bind:electricVehicle={tripState.electricVehicle}
+              bind:roundTripRequired={tripState.roundTripRequired}
+              bind:vehicleType={tripState.vehicleType}
+              route={tripState.route}
+              {comparisonResult}
+              calculateTripDetails={onSubmit}
+            />
+          </div>
+        </div>
+      </Drawer.Content>
+    </Drawer.Portal>
+  </Drawer.Root>
 </div>

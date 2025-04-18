@@ -69,14 +69,14 @@
 </script>
 
 <div>
-  <label use:melt={$label} class="block text-sm text-gray-700">
+  <label use:melt={$label} class="hidden md:block text-sm text-gray-700">
     {labelText}
   </label>
   <input
     use:melt={$input}
     oninput={handleInput}
     type="text"
-    class="border-2 border-gray-800 px-2 py-3 bg-transparent w-full"
+    class=" border-2 border-gray-800 p-1 md:px-2 md:py-3 bg-transparent w-full"
     {placeholder}
   />
 </div>
