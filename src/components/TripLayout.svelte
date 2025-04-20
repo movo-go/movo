@@ -11,6 +11,7 @@
   import { getMapKit } from "../utilities/mapkit";
   import type { Homezone } from "../types/evo";
   import { Drawer } from "vaul-svelte";
+
   const { homezones }: { homezones: Homezone[] } = $props();
 
   let tripState = $state<TripState>({
@@ -111,11 +112,27 @@
     latitude: 49.28091630159075,
     longitude: -123.11395918331695,
   };
-  const snapPoints: (number | string)[] = ["70px", 0.4, 0.7, 1];
-
-  let currentSnapPoint = $state<number | string>(snapPoints[0]);
+  let snap = $state(0);
 
   $effect(() => {
+    if (tripState.destinationCoordinate) {
+      console.log("destinationCoordinate", tripState.destinationCoordinate);
+      // place marker on map
+      if (currentDestination) {
+        map.removeAnnotation(currentDestination);
+      }
+      currentDestination = new mapkitInstance.MarkerAnnotation(
+        new mapkitInstance.Coordinate(
+          tripState.destinationCoordinate.latitude,
+          tripState.destinationCoordinate.longitude,
+        ),
+      );
+      map.addAnnotation(currentDestination);
+      snap = 0.4;
+      // center map on destination
+      map.showItems([currentDestination], { animate: true });
+    }
+
     if (tripState.route) {
       if (currentRoute) {
         map.removeOverlay(currentRoute.polyline);
@@ -159,7 +176,6 @@
         ),
       });
       // after creating map ensure overlay is on screen??
-      currentSnapPoint = snapPoints[0];
 
       map.addEventListener("user-location-change", (event) => {
         console.log("user-location-change", event);
@@ -199,8 +215,8 @@
   });
 </script>
 
-<div class="w-full h-screen flex">
-  <div class="hidden md:block md:max-w-96">
+<div class="w-full flex h-full">
+  <div class="hidden md:block md:max-w-96 h-full">
     <TripSidebar
       bind:originCoordinate={tripState.originCoordinate}
       bind:destinationCoordinate={tripState.destinationCoordinate}
@@ -215,48 +231,46 @@
       calculateTripDetails={onSubmit}
     />
   </div>
-  <div
-    class="absolute md:static md:block w-screen h-screen md:w-full md:h-full md:grow"
-  >
+  <div class="h-screen w-screen md:w-full md:h-full md:grow">
     <div class="w-full h-full" bind:this={mapElement}></div>
   </div>
-  <Drawer.Root
-    modal={false}
-    defaultOpen
-    open={true}
-    dismissible={false}
-    {snapPoints}
-    bind:activeSnapPoint={currentSnapPoint}
-    onActiveSnapPointChange={(point) => {
-      console.log("yuh", point);
-    }}
-  >
-    <Drawer.Portal>
-      <Drawer.Overlay class="fixed inset-0 bg-black/40 md:hidden" />
-      <Drawer.Content
-        class="bg-stone-50 flex flex-col fixed bottom-0 left-0 right-0 max-h-[96%] rounded-t-[10px] md:hidden"
-      >
-        <div class="h-full bg-stone-50">
-          <div class="p-1">
-            <Drawer.Handle class="bg-stone-500!" />
-          </div>
-          <div class="px-2">
-            <TripSidebar
-              bind:originCoordinate={tripState.originCoordinate}
-              bind:destinationCoordinate={tripState.destinationCoordinate}
-              inEvoHomeZone={tripState.inEvoHomeZone}
-              bind:stayDuration={tripState.stayDuration}
-              bind:bcaaMembership={tripState.bcaaMembership}
-              bind:electricVehicle={tripState.electricVehicle}
-              bind:roundTripRequired={tripState.roundTripRequired}
-              bind:vehicleType={tripState.vehicleType}
-              route={tripState.route}
-              {comparisonResult}
-              calculateTripDetails={onSubmit}
-            />
-          </div>
-        </div>
-      </Drawer.Content>
-    </Drawer.Portal>
-  </Drawer.Root>
 </div>
+
+<Drawer.Root
+  open
+  dismissible={false}
+  snapPoints={["78px", "400px", 1]}
+  modal={false}
+  bind:activeSnapPoint={snap}
+  onActiveSnapPointChange={(snapPoint) => {
+    console.log("activeSnapPoint", snapPoint);
+  }}
+>
+  <Drawer.Overlay class="fixed inset-0 bg-black/40 md:hidden" />
+  <Drawer.Portal>
+    <Drawer.Content
+      class="bg-stone-50 fixed flex flex-col rounded-t-[10px] bottom-0 left-0 right-0 h-full max-h-[97%] mx-[-1px] md:hidden"
+    >
+      <Drawer.Handle class=" bg-stone-500!"></Drawer.Handle>
+      <div
+        class={"flex flex-col max-w-md mx-auto w-full p-2 min-h-[400px] " +
+          (snap === 1 ? "overflow-y-auto" : "overflow-hidden")}
+      >
+        <!--  -->
+        <TripSidebar
+          bind:originCoordinate={tripState.originCoordinate}
+          bind:destinationCoordinate={tripState.destinationCoordinate}
+          inEvoHomeZone={tripState.inEvoHomeZone}
+          bind:stayDuration={tripState.stayDuration}
+          bind:bcaaMembership={tripState.bcaaMembership}
+          bind:electricVehicle={tripState.electricVehicle}
+          bind:roundTripRequired={tripState.roundTripRequired}
+          bind:vehicleType={tripState.vehicleType}
+          route={tripState.route}
+          {comparisonResult}
+          calculateTripDetails={onSubmit}
+        />
+      </div>
+    </Drawer.Content>
+  </Drawer.Portal>
+</Drawer.Root>

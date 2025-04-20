@@ -1,5 +1,6 @@
 <script lang="ts">
   import Address from "./Address.svelte";
+  import Input from "./Input.svelte";
   import type { ComparisonCalc, TripState } from "./TripTypes";
   // Get current location on component mount
   type ExpandedStage = "mini" | "partial" | "full";
@@ -78,7 +79,7 @@
   }
 </script>
 
-<div class="w-full h-full overflow-y-auto md:p-5 bg-stone-50 shadow-md">
+<div class="w-full h-full overflow-y-auto md:p-5 bg-stone-50">
   {#if isFormView}
     <!-- Form View -->
     <div class="space-y-6">
@@ -87,6 +88,14 @@
       </h1>
 
       <div class="space-y-4">
+        <div>
+          <Address
+            bind:value={destination}
+            label="Destination"
+            placeholder="Where do you want to go?"
+          />
+        </div>
+
         <div>
           <Address
             bind:value={origin}
@@ -99,15 +108,7 @@
         </div>
 
         <div>
-          <Address
-            bind:value={destination}
-            label="Destination"
-            placeholder="Where do you want to go?"
-          />
-        </div>
-
-        <div>
-          <label
+          <!-- <label
             for="stay-duration"
             class="block text-sm text-gray-700 font-medium"
           >
@@ -118,6 +119,14 @@
             type="number"
             bind:value={stayDuration}
             min="0"
+          /> -->
+          <Input
+            labelText="Stay Duration (minutes)"
+            placeholder="Stay Duration?"
+            type="number"
+            bind:value={stayDuration}
+            min="0"
+            id="stay-duration"
           />
         </div>
 
@@ -137,7 +146,7 @@
             />
             <button
               type="button"
-              class={`${minWidth} h-12 text-center px-4 py-2 rounded-full border-2 transition-colors duration-200 font-medium ${
+              class={`${minWidth} h-8 text-center rounded-full border-2 transition-colors duration-200 font-medium ${
                 value
                   ? "bg-gray-800 text-white border-gray-800"
                   : "bg-transparent text-gray-800 border-gray-300"
@@ -145,7 +154,7 @@
               onclick={() => onToggle(toggleChip(value))}
             >
               <span class="flex justify-center items-center">
-                <span class="text-sm">{label}</span>
+                <span class="text-xs">{label}</span>
                 {#if value}
                   <span class="ml-1">✓</span>
                 {/if}
@@ -155,48 +164,41 @@
         {/snippet}
 
         <div class="mt-6">
-          <h3 class="text-sm font-semibold text-gray-700 mb-3">Options</h3>
-          <div class="flex flex-wrap gap-3">
+          <h3 class="text-sm font-semibold text-gray-700">Options</h3>
+          <div class="flex flex-wrap gap-1 my-1">
             {@render toggleChipComponent(
               roundTripRequired,
-              "Round Trip",
-              "min-w-[130px]",
+              "Round Trip Required",
+              "min-w-[140px]",
               "round-trip-required",
               (newValue) => (roundTripRequired = newValue),
             )}
             {@render toggleChipComponent(
               bcaaMembership,
               "BCAA Member",
-              "min-w-[130px]",
+              "min-w-[115px]",
               "bcaa-membership",
               (newValue) => (bcaaMembership = newValue),
             )}
             {@render toggleChipComponent(
               electricVehicle,
               "Electric Vehicle",
-              "min-w-[150px]",
+              "min-w-[115px]",
               "electric-vehicle",
               (newValue) => (electricVehicle = newValue),
             )}
+            <div>
+              <select
+                id="vehicle-type"
+                bind:value={vehicleType}
+                class="min-w-[115px] text-xs h-8 text-center rounded-full border-gray-300 border-2 transition-colors duration-200 font-medium"
+              >
+                <option value="daily_drive">Daily Drive</option>
+                <option value="large_loadable">Large Loadable</option>
+                <option value="oversized">Oversized</option>
+              </select>
+            </div>
           </div>
-        </div>
-
-        <div>
-          <label
-            for="vehicle-type"
-            class="block text-sm text-gray-700 font-medium"
-          >
-            Vehicle Type
-          </label>
-          <select
-            id="vehicle-type"
-            bind:value={vehicleType}
-            class="border-2 border-gray-800 px-2 py-3 bg-transparent w-full mt-1"
-          >
-            <option value="daily_drive">Daily Drive</option>
-            <option value="large_loadable">Large Loadable</option>
-            <option value="oversized">Oversized</option>
-          </select>
         </div>
       </div>
 
