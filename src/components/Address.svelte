@@ -1,101 +1,273 @@
 <script lang="ts">
-  import { mk } from "../lib/mapkit";
-  import { getErrorMessage } from "../lib/errors";
-  import type { FormEventHandler } from "svelte/elements";
-  import { fly } from "svelte/transition";
-  import { debounced } from "$lib/debounce";
-  import { createCombobox, melt } from "@melt-ui/svelte";
+  import { mk } from "../lib/mapkit"
+  import { getErrorMessage } from "../lib/errors"
+  import type { FormEventHandler } from "svelte/elements"
+  import { fly } from "svelte/transition"
+  import { debounced } from "$lib/debounce"
+  import { Combobox } from "bits-ui"
+  import { toast } from "svelte-sonner"
+  import {
+    load,
+    type MapKit,
+    type SearchAutocompleteResult,
+  } from "@apple/mapkit-loader"
+  import type { Place } from "./TripTypes"
+  import { PUBLIC_MAPKIT_TOKEN } from "$env/static/public"
 
   type Props = {
-    label: string;
-    value: mapkit.SearchAutocompleteResult | undefined;
-    placeholder?: string;
-  };
+    label: string
+    value: Place | undefined
+    placeholder?: string
+    dot: "round" | "square"
+    localOnly?: boolean
+    onLocationSelected?: (
+      coordinate: InstanceType<MapKit["Coordinate"]>,
+      isCurrentLocation: boolean,
+    ) => void
+  }
 
-  let { label: labelText, value = $bindable(), placeholder }: Props = $props();
+  let {
+    label,
+    value = $bindable(),
+    placeholder,
+    dot,
+    localOnly = false,
+    onLocationSelected,
+  }: Props = $props()
 
-  let results = $state<mapkit.SearchAutocompleteResult[]>([]);
-  let errorMessage = $state<string>();
+  const inputId = $props.id()
 
-  let controller: AbortController | undefined;
+  let results = $state.raw<SearchAutocompleteResult[]>([])
+  // Follows the selected place (also when set from a shared link) until the user types
+  let inputValue = $derived(value?.displayLines.join(", ") ?? "")
+  let showLocationOption = $state(false)
+  let isRequestingLocation = $state(false)
+
+  let controller: AbortController | undefined
 
   const fetchResults = debounced(200, (query: string, signal: AbortSignal) =>
-    mk.search.autocomplete(query, { signal }).then(
+    mk.search.autocomplete(query, { signal, localOnly }).then(
       (newResults) => {
-        results = newResults;
+        results = newResults
       },
       (error) => {
-        if (signal.aborted) return;
-        errorMessage = getErrorMessage(error, "Failed to fetch results");
+        if (signal.aborted) return
+        toast.error(getErrorMessage(error, "Failed to fetch results"))
       },
     ),
-  );
-
-  const handleInput: FormEventHandler<HTMLInputElement> = async (event) => {
-    const input = event.currentTarget.value;
-    controller?.abort();
-    controller = new AbortController();
-    fetchResults(input, controller.signal);
-  };
+  )
 
   const items = $derived(
-    results.map((result) => {
-      const label = result.displayLines.join(" ");
+    results.map((result) => ({
+      id: result.id ?? crypto.randomUUID(),
+      label: result.displayLines.join(", "),
+      result,
+    })),
+  )
 
-      return {
-        id: label,
-        value: result,
-        option: {
-          label,
-          value: label,
+  function handleValueChange(id: string) {
+    const item = items.find((item) => item.id === id)
+    if (!item) return
+    value = item.result
+    if (onLocationSelected && item.result.coordinate) {
+      onLocationSelected(item.result.coordinate, false)
+    }
+  }
+
+  // Typing replaces the picked place, so an edited field never prices the old one.
+  const handleInput: FormEventHandler<HTMLInputElement> = (event) => {
+    value = undefined
+    inputValue = event.currentTarget.value
+    showLocationOption = false
+    controller?.abort()
+    if (inputValue.length === 0) {
+      results = []
+      return
+    }
+    controller = new AbortController()
+    fetchResults(inputValue, controller.signal)
+  }
+
+  const handleFocus: FormEventHandler<HTMLInputElement> = (event) => {
+    if (event.currentTarget.value.length === 0) {
+      showLocationOption = true
+    }
+  }
+
+  const handleBlur = () => {
+    // Delay so a click on the location button still registers
+    setTimeout(() => {
+      showLocationOption = false
+    }, 200)
+  }
+
+  async function requestUserLocation() {
+    if (isRequestingLocation) return
+
+    isRequestingLocation = true
+
+    try {
+      const mapkit = await load({
+        token: PUBLIC_MAPKIT_TOKEN,
+        language: "en-US",
+      })
+
+      if (!navigator.geolocation) {
+        toast.error("Location not supported", {
+          description: "Your browser does not support geolocation.",
+        })
+        isRequestingLocation = false
+        return
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const coordinate = new mapkit.Coordinate(
+            position.coords.latitude,
+            position.coords.longitude,
+          )
+
+          onLocationSelected?.(coordinate, true)
+
+          value = {
+            coordinate,
+            displayLines: ["Current location"],
+          }
+
+          isRequestingLocation = false
+          showLocationOption = false
         },
-      };
-    }),
-  );
+        (error) => {
+          console.error("Geolocation error:", error)
 
-  const {
-    elements: { label, input, menu, option },
-    states: { open, inputValue },
-  } = createCombobox<string>({
-    forceVisible: true,
-    onSelectedChange: ({ next }) => {
-      if (!next) return;
-      const item = items.find((item) => item.id === next.value);
-      $inputValue = item?.option.label ?? "";
-      value = item?.value;
-      return next;
-    },
-  });
+          if (error.code === error.PERMISSION_DENIED) {
+            toast.error("Location access denied", {
+              description:
+                "Movo does not have access to your location. Please enable location access in your browser's site settings if you want to use this feature.",
+              duration: 6000,
+            })
+          } else if (error.code === error.POSITION_UNAVAILABLE) {
+            toast.error("Location unavailable", {
+              description:
+                "Your location is currently unavailable. Please try again later.",
+            })
+          } else if (error.code === error.TIMEOUT) {
+            toast.error("Location request timed out", {
+              description:
+                "The request to get your location timed out. Please try again.",
+            })
+          } else {
+            toast.error("Location error", {
+              description: "An error occurred while getting your location.",
+            })
+          }
+
+          isRequestingLocation = false
+          showLocationOption = false
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
+        },
+      )
+    } catch (error) {
+      console.error("Error loading MapKit:", error)
+      toast.error("Error", {
+        description: "Failed to load location services.",
+      })
+      isRequestingLocation = false
+    }
+  }
 </script>
 
-<div>
-  <label use:melt={$label} class="hidden md:block text-sm text-gray-700">
-    {labelText}
-  </label>
-  <input
-    use:melt={$input}
-    oninput={handleInput}
-    type="text"
-    class=" border-2 border-gray-800 p-1 md:px-2 md:py-3 bg-transparent w-full"
-    {placeholder}
-  />
-</div>
-
-{#if $open && results.length > 0}
-  <ul
-    use:melt={$menu}
-    transition:fly={{ y: -10, duration: 150 }}
-    class="bg-white border-2 border-gray-800 shadow-2xl p-2 min-h-64 max-h-80 overflow-y-auto"
+<div
+  class="relative flex h-11 items-center gap-2.5 px-3 outline-offset-[-4px] outline-ink focus-within:outline-2"
+>
+  <span
+    aria-hidden="true"
+    class={[
+      "size-2.5 shrink-0",
+      dot === "round" ? "rounded-full inset-ring-3 inset-ring-ink" : "bg-ink",
+    ]}
+  ></span>
+  <label for={inputId} class="sr-only">{label}</label>
+  <Combobox.Root
+    type="single"
+    {inputValue}
+    items={items.map(({ id, label }) => ({ value: id, label }))}
+    onValueChange={handleValueChange}
   >
-    {#each items as item (item.id)}
-      <li
-        use:melt={$option(item.option)}
-        class="p-2 rounded-md cursor-pointer hover:bg-orange-50 data-highlighted:bg-orange-50"
+    <Combobox.Input
+      id={inputId}
+      defaultValue={inputValue}
+      oninput={handleInput}
+      onfocus={handleFocus}
+      onblur={handleBlur}
+      class="h-full min-w-0 flex-1 bg-transparent font-semibold outline-none placeholder:font-normal placeholder:text-muted"
+      {placeholder}
+    />
+
+    {#if items.length > 0}
+      <Combobox.ContentStatic
+        class="absolute top-full -right-0.5 -left-0.5 z-200 mt-0.5 max-h-80 overflow-y-auto border-2 border-rule bg-surface shadow-block"
       >
-        {#each item.value.displayLines as line, index (index)}
-          <p class:text-sm={index !== 0}>{line}</p>
+        {#each items as item (item.id)}
+          <Combobox.Item
+            value={item.id}
+            label={item.label}
+            class="group cursor-pointer border-b border-hair px-3 py-2 last:border-b-0 hover:bg-ink hover:text-bg data-highlighted:bg-ink data-highlighted:text-bg"
+          >
+            {#each item.result.displayLines as line, index (index)}
+              <p
+                class={index === 0
+                  ? "font-semibold"
+                  : "text-sm text-muted group-hover:text-bg group-data-highlighted:text-bg"}
+              >
+                {line}
+              </p>
+            {/each}
+          </Combobox.Item>
         {/each}
-      </li>
-    {/each}
-  </ul>
-{/if}
+      </Combobox.ContentStatic>
+    {/if}
+  </Combobox.Root>
+
+  {#if showLocationOption}
+    <ul
+      transition:fly={{ y: -10, duration: 100 }}
+      class="absolute top-full -right-0.5 -left-0.5 z-200 mt-0.5 border-2 border-rule bg-surface shadow-block"
+    >
+      {#if isRequestingLocation}
+        <li class="flex h-11 items-center px-3 text-muted">
+          Getting your location...
+        </li>
+      {:else}
+        <li>
+          <button
+            type="button"
+            onclick={requestUserLocation}
+            class="flex h-11 w-full cursor-pointer items-center gap-2 px-3 text-left font-semibold hover:bg-ink hover:text-bg"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <span>Use my location</span>
+          </button>
+        </li>
+      {/if}
+    </ul>
+  {/if}
+</div>

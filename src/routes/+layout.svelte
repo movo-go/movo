@@ -1,17 +1,35 @@
 <script lang="ts">
-  import { PUBLIC_MAPKIT_TOKEN } from "$env/static/public";
-  import "../app.css";
+  import { Toaster } from "svelte-sonner"
+  import { themeContext } from "../lib/theme-context.svelte"
+  import { browser } from "$app/environment"
+
+  import "../app.css"
+  let { children } = $props()
+
+  $effect(() => {
+    if (browser) {
+      document.documentElement.classList.toggle("dark", themeContext.isDarkMode)
+    }
+  })
 </script>
 
 <svelte:head>
-  <script
+  <title>movo go</title>
+  <!-- <script
     src="https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.core.js"
     crossorigin="anonymous"
     async
     data-callback="initMapKit"
     data-libraries="map,services,user-location,annotations,geojson,overlays"
     data-token={PUBLIC_MAPKIT_TOKEN}
-  ></script>
+  ></script> -->
 </svelte:head>
 
-<slot />
+<Toaster
+  position="top-center"
+  toastOptions={{
+    class:
+      "rounded-none! border-2! border-rule! bg-surface! text-ink! font-sans!",
+  }}
+/>
+{@render children()}

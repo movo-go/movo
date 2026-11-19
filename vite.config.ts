@@ -1,9 +1,13 @@
 /// <reference types="vitest/config" />
 
-import { sveltekit } from "@sveltejs/kit/vite";
-import tailwindcss from "@tailwindcss/vite";
-import { defineConfig } from "vite";
+import { sveltekit } from "@sveltejs/kit/vite"
+import tailwindcss from "@tailwindcss/vite"
+import { defineConfig } from "vite"
 
 export default defineConfig({
   plugins: [sveltekit(), tailwindcss()],
-});
+  test: {
+    include: ["src/**/*.test.ts"],
+    env: { TZ: "America/Vancouver" },
+  },
+})

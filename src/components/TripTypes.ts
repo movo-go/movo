@@ -1,21 +1,47 @@
-import type { ComparisonResult } from "../calculations";
+import type {
+  ModoPlan,
+  ParkingSpot,
+  TripParameters,
+  VehicleClass,
+} from "../calculations"
+import type {
+  DirectionsResponse,
+  SearchAutocompleteResult,
+} from "@apple/mapkit-loader"
+import type { Stay } from "../lib/trip-time"
 
-export interface TripState {
-  originCoordinate: mapkit.Coordinate | undefined;
-  destinationCoordinate: mapkit.Coordinate | undefined;
-  inEvoHomeZone: boolean;
-  stayDuration: number | undefined;
-  bcaaMembership: boolean;
-  electricVehicle: boolean;
-  roundTripRequired: boolean;
-  route: mapkit.Route | undefined;
-  vehicleType: "daily_drive" | "large_loadable" | "oversized" | undefined;
+export type Place = Pick<
+  SearchAutocompleteResult,
+  "coordinate" | "displayLines"
+>
+
+export type Coordinate = NonNullable<Place["coordinate"]>
+
+export interface TripForm {
+  origin: Place | undefined
+  destination: Place | undefined
+  originIsCurrentLocation: boolean
+  leaveAt: Date
+  stay: Stay
+  walkMeters: number
+  bcaaMember: boolean
+  preferEv: boolean
+  roundTrip: boolean
+  vehicleType: VehicleClass | undefined
+  modoPlan: ModoPlan
 }
-type ComparisonError = {
-  message: string;
-  show: boolean;
-};
-export type ComparisonCalc = {
-  data: ComparisonResult | null;
-  error: ComparisonError | null;
-};
+
+export interface Route {
+  origin: Coordinate
+  destination: Coordinate
+  leaveAt: Date
+  route: DirectionsResponse["routes"][number]
+  drivingMinutes: number
+  distanceKm: number
+}
+
+export interface Trip extends Route {
+  parking: ParkingSpot | null
+  walkMeters: number
+  pricing: TripParameters
+}
